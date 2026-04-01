@@ -11,18 +11,29 @@
 - SettingsView and mock connection profile management flow are working.
 - Repository and contract layers were added between views and mock data.
 - Session and app settings model backbone was added.
+- Password visibility eye toggle was added to the login form.
+- The login screen was kept minimal in this checkpoint.
+- Password rule guidance was intentionally kept out of the login screen.
+- Bottom bar session visibility was added.
+- Locked session state is shown when no login is active.
+- Open session state and username are shown after successful login.
+- Bottom bar session visibility is connected through shell state and session usage.
+- Bottom-right info text was updated to `ASUNODE LoginShell v0.1.0`.
 
 ## Current
 
 - Preserve the current shell-first structure without disturbing UI language.
-- Keep the known overflow in the settings profile form deferred for a later pass.
+- Preserve the neumorphic / soft UI character while making small scoped changes.
 - Maintain repository and contract separation as the current data access rule.
 - Keep SettingsView focused on profile management and connection testing, not operational data loading.
 
 ## Next
 
-- Add a password visibility eye icon to the login form.
-- Add locked and unlocked key state feedback to the bottom bar.
-- Show the logged-in username in the bottom bar after authentication.
-- Keep the login screen minimal and focused.
-- Design password rule guidance separately from the login screen.
+- prepare password creation, password change, and password reset flows separately from login
+- continue aligning local session usage with later persistence planning
+- review the top bar product title and replace `SWorld` with `Login` in a later checkpoint
+
+## Deferred / Known
+
+- the known overflow in the settings `connection_profile_form` remains deferred for a later pass
+- this item was not a primary target in the current checkpoint
