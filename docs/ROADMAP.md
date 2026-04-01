@@ -23,7 +23,14 @@ Completed in the current checkpoint:
 - locked state is shown when no login is active
 - open session state and username are shown after successful login
 - session data is surfaced through shell state and session layer usage
+- left root title now uses `Login` before authentication and the user's display name after authentication
+- left title capsule root navigation behavior was added
+- top bar user slot now becomes logout after authentication
+- logout confirmation flow was added
+- confirmed logout clears session, user, and menu state and returns the shell to `LoginView`
+- safe exit remains separate from logout
 - bottom-right info text was updated to `ASUNODE LoginShell v0.1.0`
+- `SWorld` to `Login` root title migration is complete
 
 ## Phase 4: Authorized Menus
 
@@ -58,7 +65,7 @@ Authentication, storage, access control, and production hardening remain future 
 - continue keeping the shell-first structure stable while expanding behavior carefully
 - prepare later password creation / change / reset flows separately from login
 - carry session-backed local control behavior toward future persistence work
-- review the top bar title text and replace `SWorld` with `Login` in a later checkpoint
+- continue strengthening authenticated shell behavior without widening the architecture unnecessarily
 
 ## Deferred and Known
 

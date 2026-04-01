@@ -103,6 +103,18 @@ class _ShellPageState extends State<ShellPage> {
     return null;
   }
 
+  String get _rootTitle {
+    if (_isAuthenticated) {
+      final sessionName = _sessionDisplayName;
+      if (sessionName != null && sessionName.isNotEmpty) {
+        return sessionName;
+      }
+      return 'Menülerim';
+    }
+
+    return 'Login';
+  }
+
   Future<void> _rememberSection(ShellSection section) async {
     final settings = await _appSettingsRepository.loadSettings();
     await _appSettingsRepository.saveSettings(
@@ -150,6 +162,75 @@ class _ShellPageState extends State<ShellPage> {
     });
     await _rememberSection(_section);
     return true;
+  }
+
+  Future<void> _goToLoginRoot() async {
+    setState(() {
+      _section = ShellSection.login;
+      _loginError = null;
+    });
+    await _rememberSection(ShellSection.login);
+  }
+
+  Future<void> _goToAuthorizedRoot() async {
+    if (!_isAuthenticated || _currentUser == null) {
+      await _goToLoginRoot();
+      return;
+    }
+
+    setState(() {
+      _section = ShellSection.authorizedMenu;
+      _loginError = null;
+    });
+    await _rememberSection(ShellSection.authorizedMenu);
+  }
+
+  Future<void> _handleTitleTap() async {
+    if (_isAuthenticated) {
+      await _goToAuthorizedRoot();
+      return;
+    }
+
+    await _goToLoginRoot();
+  }
+
+  Future<void> _handleUserTap() async {
+    if (_isAuthenticated) {
+      await _goToAuthorizedRoot();
+      return;
+    }
+
+    await _goToLoginRoot();
+  }
+
+  Future<void> _handleLogout() async {
+    if (!_isAuthenticated) {
+      await _goToLoginRoot();
+      return;
+    }
+
+    final shouldLogout = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const _LogoutConfirmationDialog(),
+        ) ??
+        false;
+
+    if (!mounted || !shouldLogout) {
+      return;
+    }
+
+    await _sessionRepository.clearSession();
+
+    setState(() {
+      _currentSession = null;
+      _currentUser = null;
+      _authorizedMenus = const [];
+      _loginError = null;
+      _section = ShellSection.login;
+    });
+
+    await _rememberSection(ShellSection.login);
   }
 
   Future<void> _confirmExit() async {
@@ -215,9 +296,10 @@ class _ShellPageState extends State<ShellPage> {
         body: Column(
           children: [
             ShellTopBar(
-              title: 'SWorld',
+              title: _rootTitle,
               subtitle: _subtitle,
               isDarkMode: widget.isDarkMode,
+              onTitleTap: _handleTitleTap,
               onHomeTap: () {
                 setState(() {
                   _section = ShellSection.info;
@@ -226,13 +308,7 @@ class _ShellPageState extends State<ShellPage> {
                 _rememberSection(ShellSection.info);
               },
               onThemeToggle: widget.onToggleTheme,
-              onUserTap: () {
-                setState(() {
-                  _section = ShellSection.login;
-                  _loginError = null;
-                });
-                _rememberSection(ShellSection.login);
-              },
+              onUserTap: _handleUserTap,
               onSettingsTap: () {
                 setState(() {
                   _section = ShellSection.settings;
@@ -240,6 +316,8 @@ class _ShellPageState extends State<ShellPage> {
                 });
                 _rememberSection(ShellSection.settings);
               },
+              showLogout: _isAuthenticated,
+              onLogoutTap: _handleLogout,
               onExitTap: _confirmExit,
             ),
             Expanded(
@@ -249,6 +327,58 @@ class _ShellPageState extends State<ShellPage> {
               statusText: _statusText,
               isAuthenticated: _isAuthenticated,
               sessionDisplayName: _sessionDisplayName,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LogoutConfirmationDialog extends StatelessWidget {
+  const _LogoutConfirmationDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final primaryText = brightness == Brightness.dark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimary;
+    final secondaryText = brightness == Brightness.dark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondary;
+
+    return Dialog(
+      child: NeumorphicContainer(
+        borderRadius: BorderRadius.circular(AppConstants.radiusCard),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Oturumu Kapat',
+              style: AppTextStyles.h2.copyWith(color: primaryText),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Mevcut kullanıcı oturumunu kapatmak istediğinize emin misiniz?',
+              style: AppTextStyles.bodyMedium.copyWith(color: secondaryText),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('İptal'),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Oturumu Kapat'),
+                ),
+              ],
             ),
           ],
         ),

@@ -40,6 +40,12 @@ This structure is being expanded in a controlled way for login, authorized navig
 - The login screen remains intentionally minimal.
 - The bottom bar reflects locked or open session state.
 - The bottom bar shows the authenticated username after login.
+- The left title capsule shows `Login` before authentication.
+- The left title capsule shows the authenticated user's display name after login.
+- The left title capsule acts as a root navigation shortcut.
+- The top bar user slot shows the user action before authentication and becomes logout after authentication.
+- Logout requires confirmation and returns the shell to the login root when approved.
+- Safe exit remains separate from logout.
 
 ## Current Checkpoint
 
@@ -49,6 +55,12 @@ This structure is being expanded in a controlled way for login, authorized navig
 - Locked session state is shown when no login is active.
 - Open session state and username are shown after successful login.
 - Session data is connected to the bottom bar through shell state and session layer usage.
+- The shell root title now uses `Login` before authentication and the user's display name after authentication.
+- The left title capsule now returns to the login root when no session exists and to the authorized menu root when a session is active.
+- The top bar user slot is simplified: it shows the user action before authentication and becomes a logout action after authentication.
+- Logout now asks for confirmation before clearing session, current user, and authorized menu state and returning to `LoginView`.
+- Safe exit remains the dedicated application exit flow.
+- The previous `SWorld` title has been replaced in the shell root title behavior.
 - The right-side info text now reads `ASUNODE LoginShell v0.1.0`.
 - The current neumorphic / soft UI feel and controlled architecture approach were preserved.
 - The known overflow in the settings profile form still exists and remains intentionally deferred.
@@ -81,12 +93,9 @@ SettingsView is for profile management and connection checks. It is not the futu
 - The shell-first structure was preserved.
 - The bottom bar was expanded on top of the existing layout instead of being redesigned.
 - Session visibility is aligned with the session layer rather than being treated as raw auth-only UI state.
+- Root navigation remains inside the shell structure through the title capsule instead of introducing a separate navigation layer.
+- Logout stays separate from safe exit.
 - `login_view.dart` was intentionally left unchanged in this checkpoint.
-
-## Next Notes
-
-- The top bar title currently still shows `SWorld`.
-- Changing that title to `Login` remains a later technical debt item, not part of this checkpoint.
 
 ## Documentation
 

@@ -2,16 +2,18 @@
 
 ## 2026-04-01
 
-- Added password visibility toggle behavior to the login form.
-- Kept the login screen intentionally minimal.
-- Did not add password rule guidance to the login screen in this checkpoint.
-- Extended the bottom bar with session visibility feedback without redesigning the existing structure.
-- Added locked session state feedback for the no-login state.
-- Added open session state and username visibility after successful login.
-- Connected bottom bar session visibility through shell state and session-layer usage.
-- Updated the bottom-right info text to `ASUNODE LoginShell v0.1.0`.
-- Preserved the shell-first structure, current neumorphic / soft UI feel, and controlled architecture approach.
-- Left the known settings-side `connection_profile_form` overflow deferred.
+- Login shell root title now uses `Login` before authentication and the user's display name after authentication.
+- Left title capsule root navigation behavior was added.
+- Top bar user slot now transforms into logout after authentication.
+- Logout confirmation dialog was added.
+- Confirmed logout now clears session, current user, and authorized menu state and returns the shell to `LoginView`.
+- Safe exit remains separate from logout.
+- `SWorld` to `Login` root title migration was completed.
+- Password visibility toggle behavior remains part of the login form.
+- Bottom bar session visibility remains connected through shell state and session-layer usage.
+- Bottom-right info text remains `ASUNODE LoginShell v0.1.0`.
+- Current neumorphic / soft UI feel and controlled shell-first architecture were preserved.
+- Settings-side `connection_profile_form` overflow remains deferred.
 
 ## 2026-03-31
 

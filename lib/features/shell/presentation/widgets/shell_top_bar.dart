@@ -16,6 +16,9 @@ class ShellTopBar extends StatelessWidget {
     required this.onUserTap,
     required this.onSettingsTap,
     required this.onExitTap,
+    this.onTitleTap,
+    this.showLogout = false,
+    this.onLogoutTap,
   });
 
   final String title;
@@ -26,6 +29,9 @@ class ShellTopBar extends StatelessWidget {
   final VoidCallback onUserTap;
   final VoidCallback onSettingsTap;
   final VoidCallback onExitTap;
+  final VoidCallback? onTitleTap;
+  final bool showLogout;
+  final VoidCallback? onLogoutTap;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +39,13 @@ class ShellTopBar extends StatelessWidget {
     final background = brightness == Brightness.dark
         ? AppColors.backgroundDark
         : AppColors.background;
+
+    final titleCapsule = ShellTitleCapsule(
+      title: title,
+      subtitle: subtitle,
+    );
+
+    final bool useLogoutSlot = showLogout && onLogoutTap != null;
 
     return Container(
       height: AppConstants.topBarHeight,
@@ -60,9 +73,15 @@ class ShellTopBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          ShellTitleCapsule(
-            title: title,
-            subtitle: subtitle,
+          MouseRegion(
+            cursor: onTitleTap != null
+                ? SystemMouseCursors.click
+                : SystemMouseCursors.basic,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onTitleTap,
+              child: titleCapsule,
+            ),
           ),
           const Spacer(),
           ShellIconButton(
@@ -80,9 +99,11 @@ class ShellTopBar extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           ShellIconButton(
-            icon: Icons.person_outline_rounded,
-            onTap: onUserTap,
-            tooltip: 'Kullanıcı',
+            icon: useLogoutSlot
+                ? Icons.logout_rounded
+                : Icons.person_outline_rounded,
+            onTap: useLogoutSlot ? onLogoutTap! : onUserTap,
+            tooltip: useLogoutSlot ? 'Oturumu Kapat' : 'Kullanıcı',
           ),
           const SizedBox(width: 12),
           ShellIconButton(
@@ -92,7 +113,7 @@ class ShellTopBar extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           ShellIconButton(
-            icon: Icons.logout_rounded,
+            icon: Icons.power_settings_new_rounded,
             onTap: onExitTap,
             tooltip: 'Güvenli Çıkış',
           ),

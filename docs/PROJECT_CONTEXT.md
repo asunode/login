@@ -20,6 +20,7 @@ This shell-first structure is being extended gradually without replacing the cur
 - Top bar: Home, theme toggle, login entry, settings, safe exit
 - Center area: InfoView, LoginView, AuthorizedMenuView, SettingsView
 - Bottom bar: active section status, locked/open session visibility, version info
+- Left title capsule: shell root navigation shortcut based on authentication state
 
 ## Login Flow
 
@@ -36,6 +37,23 @@ This shell-first structure is being extended gradually without replacing the cur
 - The bottom bar reads session-backed state to show whether a session is locked or open.
 - After login, the bottom bar also shows the authenticated username.
 - This keeps session visibility tied to the session layer instead of treating it as a direct auth-only shortcut.
+
+## Root Navigation and User Slot Behavior
+
+- Before authentication, the left title capsule uses `Login` as the root title.
+- After authentication, the same capsule uses the authenticated user's display name as the root title.
+- Tapping the left title capsule returns to the login root when no session exists.
+- Tapping the left title capsule returns to the authenticated user's authorized menu root when a session exists.
+- The top bar user slot shows the user action before authentication.
+- After authentication, that same slot becomes the logout action.
+- This keeps the top bar simpler by avoiding a second separate logout button.
+
+## Logout and Safe Exit Separation
+
+- Logout is a session-level action and now requires confirmation.
+- On confirmed logout, session data is cleared, current user state is cleared, authorized menu state is cleared, and the shell returns to `LoginView`.
+- If logout is cancelled, the user remains in the current location.
+- Safe exit remains a separate application-level action for closing the app.
 
 ## Data Direction
 
@@ -66,6 +84,11 @@ Planned main external database layer:
 - Session and app settings models are present.
 - Password visibility toggle behavior was added to the login form.
 - Bottom bar session visibility was added without redesigning the existing bar.
+- Root title behavior now uses `Login` before authentication and the user's display name after authentication.
+- Left title capsule root navigation behavior is present.
+- Top bar user slot now changes into logout after authentication.
+- Logout confirmation behavior is present and returns the shell to the login root when approved.
+- Safe exit remains distinct from logout.
 - The current neumorphic / soft feel and controlled growth approach were preserved.
 - Settings-side overflow is known and intentionally postponed.
 
@@ -74,6 +97,8 @@ Planned main external database layer:
 - Provider was not added.
 - No new state management structure was introduced.
 - The bottom bar was extended, not rebuilt.
+- The shell root behavior was updated without introducing a new navigation service.
+- The current top bar structure was simplified rather than expanded with duplicate actions.
 - `login_view.dart` was not changed unnecessarily in this checkpoint.
 
 ## Red Lines

@@ -19,6 +19,13 @@
 - Open session state and username are shown after successful login.
 - Bottom bar session visibility is connected through shell state and session usage.
 - Bottom-right info text was updated to `ASUNODE LoginShell v0.1.0`.
+- Left title capsule root navigation is clickable.
+- The shell root title uses `Login` before authentication and the user's display name after authentication.
+- The authenticated user slot changes into logout action.
+- Logout confirmation dialog was added.
+- Confirmed logout clears session, current user, and authorized menu state and returns to `LoginView`.
+- Safe exit remains separate from logout.
+- `SWorld` to `Login` root title migration was completed.
 
 ## Current
 
@@ -31,7 +38,7 @@
 
 - prepare password creation, password change, and password reset flows separately from login
 - continue aligning local session usage with later persistence planning
-- review the top bar product title and replace `SWorld` with `Login` in a later checkpoint
+- continue expanding authenticated shell behavior in small, controlled steps
 
 ## Deferred / Known
 
