@@ -11,10 +11,34 @@ class AuthorizedMenuView extends StatelessWidget {
     super.key,
     required this.user,
     required this.menus,
+    this.onMenuTap,
   });
 
   final AppUser user;
   final List<AuthorizedMenuItem> menus;
+  final ValueChanged<AuthorizedMenuItem>? onMenuTap;
+
+  String _roleLabel(String role) {
+    switch (role.toLowerCase()) {
+      case 'admin':
+        return 'Yönetici';
+      case 'operator':
+        return 'Operatör';
+      default:
+        return role;
+    }
+  }
+
+  String _roleDescription(String role) {
+    switch (role.toLowerCase()) {
+      case 'admin':
+        return 'Aşağıdaki yönetim menüleri, mevcut yetki kurgusunun bu aşamadaki çalışma görünümünü temsil eder.';
+      case 'operator':
+        return 'Aşağıdaki menüler, mevcut kullanıcı yetkisine göre erişilebilen çalışma alanlarını gösterir.';
+      default:
+        return 'Aşağıdaki menüler, mevcut kullanıcı yetkisine göre erişilebilen çalışma alanlarını gösterir.';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +56,7 @@ class AuthorizedMenuView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 8, bottom: 24),
+            padding: const EdgeInsets.only(left: 8, bottom: 16),
             child: Text(
               'Hoş geldiniz, ${user.displayName}',
               style: AppTextStyles.h1.copyWith(
@@ -42,64 +66,123 @@ class AuthorizedMenuView extends StatelessWidget {
               ),
             ),
           ),
-          Text(
-            'Rolünüz: ${user.role}. Aşağıdaki menüler mock yetkilendirme kaynağından yüklenmiştir.',
-            style: AppTextStyles.bodyMedium.copyWith(color: secondaryText),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              'Rolünüz: ${_roleLabel(user.role)}',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: primaryText,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(
+              _roleDescription(user.role),
+              style: AppTextStyles.bodyMedium.copyWith(color: secondaryText),
+            ),
           ),
           const SizedBox(height: 24),
           Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 24,
-                crossAxisSpacing: 24,
-                childAspectRatio: 1.8,
-              ),
-              itemCount: menus.length,
-              itemBuilder: (context, index) {
-                final menu = menus[index];
-                return NeumorphicContainer(
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      NeumorphicContainer(
-                        style: NeumorphicStyle.concave,
-                        borderRadius: BorderRadius.circular(10),
-                        padding: const EdgeInsets.all(8),
-                        width: 42,
-                        height: 42,
-                        child: Icon(
-                          menu.icon,
-                          size: 20,
-                          color: AppColors.accentPrimary,
+            child: menus.isEmpty
+                ? Center(
+                    child: NeumorphicContainer(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.menu_open_outlined,
+                            size: 28,
+                            color: AppColors.accentPrimary,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Bu kullanıcı için tanımlı menü bulunamadı.',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: primaryText,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Yetki yapısı tamamlandığında bu alan ilgili çalışma ekranlarıyla dolacaktır.',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: secondaryText,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 24,
+                      crossAxisSpacing: 24,
+                      childAspectRatio: 1.8,
+                    ),
+                    itemCount: menus.length,
+                    itemBuilder: (context, index) {
+                      final menu = menus[index];
+                      final isInteractive = onMenuTap != null;
+
+                      return MouseRegion(
+                        cursor: isInteractive
+                            ? SystemMouseCursors.click
+                            : MouseCursor.defer,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: isInteractive ? () => onMenuTap!(menu) : null,
+                          child: NeumorphicContainer(
+                            padding: const EdgeInsets.all(18),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                NeumorphicContainer(
+                                  style: NeumorphicStyle.concave,
+                                  borderRadius: BorderRadius.circular(10),
+                                  padding: const EdgeInsets.all(8),
+                                  width: 42,
+                                  height: 42,
+                                  child: Icon(
+                                    menu.icon,
+                                    size: 20,
+                                    color: AppColors.accentPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  menu.title,
+                                  style: AppTextStyles.h3.copyWith(
+                                    color: primaryText,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  menu.description,
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: secondaryText,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        menu.title,
-                        style: AppTextStyles.h3.copyWith(color: primaryText),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        menu.description,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: secondaryText,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
     );
   }
 }
-
-

@@ -39,7 +39,18 @@
 - Uygulama kapat-ac sonrasinda kullanici kayitlari kalici olarak geliyor.
 - Silinen kullanici kapat-ac sonrasinda da silinmis kaliyor.
 - Kullanici guncelleme, kullanici silme ve sifre sifirlama akislarinin kodu uygulanmis durumda.
-- Built-in admin delete korumasi kod duzeyinde mevcut.
+- Built-in admin delete korumasi runtime olarak teyit edildi.
+- Admin disi kullanicilarin yonetim menusu gorunurlugu operator akisina dogru daraltildi.
+- `Grup Tanimi` shell icinde gercek view olarak aciliyor.
+- Isar-backed group list / create / update / delete akisi acik ve saha testinden gecti.
+- Built-in yonetici grubu korumasi dogrulandi.
+- `Modul Tanimi` shell icinde gercek view olarak aciliyor.
+- `shell_page.dart` icinde `module-management` gercek view'a baglandi.
+- `LocalModule` modelindeki `iconKey` karari uygulandi.
+- Modul adi, aciklama, aktif/pasif, kaydetme ve silme akislarinin saha testi yapildi.
+- Yeni modul ekleme ve silme calisiyor.
+- Built-in temel moduller listede gorunuyor.
+- Kullanici / Grup / Modul Tanimi ekranlarinin ucu de shell icinde gercek view olarak aciliyor ve temel saha testlerinden gecmis durumda.
 
 ## Current
 
@@ -49,13 +60,12 @@
 - Authorized menu tarafinin gecis asamasinda kontrollu tutulmasi
 - Group = gercek domain alani
 - Module assignment = gecici staging alani
+- Modul metadata ve daha derin baglanti yapisinin PostgreSQL sonrasi faza birakilmis olmasi
 
 ## Next
 
-1. Built-in admin delete korumasi icin kisa runtime teyidi
-2. Grup Tanimi ekranini gercek Isar-backed group yonetimine cevirme
-3. Modul Tanimi ekranina gecis
-4. Yetkili menuleri kademeli olarak gercek veri omurgasina baglama
+1. `Kullanici Tanimi` ekranindaki modul staging alanini gercek `LocalModule` kayitlarina baglama
+2. Yetkili menu ve ekran erisim mantigini gercek veri omurgasiyla daha uyumlu hale getirme
 
 ## Later
 

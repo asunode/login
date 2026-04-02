@@ -8,7 +8,9 @@ class MockAuthorizedMenuRepository implements AuthorizedMenuRepository {
 
   @override
   Future<List<AuthorizedMenuItem>> getMenusForUser(AppUser user) async {
-    return menusForRole(user.role);
+    final normalizedRole = user.role.trim().toLowerCase();
+    return List<AuthorizedMenuItem>.unmodifiable(
+      menusForRole(normalizedRole),
+    );
   }
 }
-

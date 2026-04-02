@@ -5,22 +5,28 @@ import '../../domain/models/authorized_menu_item.dart';
 const Map<String, List<AuthorizedMenuItem>> mockAuthorizedMenusByRole = {
   'admin': [
     AuthorizedMenuItem(
-      id: 'connections',
-      title: 'Bağlantı Yönetimi',
-      description: 'Profil tanımları ve aktif bağlantı seçimi',
-      icon: Icons.hub_outlined,
+      id: 'user-management',
+      title: 'Kullanıcı Tanımı',
+      description: 'Yerel kullanıcı kayıtları, durum yönetimi ve şifre sıfırlama',
+      icon: Icons.person_outline,
     ),
     AuthorizedMenuItem(
-      id: 'users',
-      title: 'Kullanıcı Yetkileri',
-      description: 'Yerel kullanıcı ve menü eşleştirmeleri',
-      icon: Icons.admin_panel_settings_outlined,
+      id: 'group-management',
+      title: 'Grup Tanımı',
+      description: 'Gruplar, açıklamalar ve modül atama hazırlığı',
+      icon: Icons.group_outlined,
     ),
     AuthorizedMenuItem(
-      id: 'logs',
-      title: 'Oturum Kayıtları',
-      description: 'Yerel oturum ve değişiklik izlemesi',
-      icon: Icons.history_outlined,
+      id: 'module-management',
+      title: 'Modül Tanımı',
+      description: 'Teknik anahtar, görünen ad ve aktif modül yönetimi',
+      icon: Icons.view_module_outlined,
+    ),
+    AuthorizedMenuItem(
+      id: 'change-password',
+      title: 'Şifre Güncelle',
+      description: 'Mevcut parola doğrulama ve güvenli parola güncelleme',
+      icon: Icons.lock_reset_outlined,
     ),
   ],
   'operator': [
@@ -42,5 +48,3 @@ const Map<String, List<AuthorizedMenuItem>> mockAuthorizedMenusByRole = {
 List<AuthorizedMenuItem> menusForRole(String role) {
   return mockAuthorizedMenusByRole[role] ?? const <AuthorizedMenuItem>[];
 }
-
-

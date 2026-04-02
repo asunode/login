@@ -46,7 +46,8 @@ Bu yapi korunarak local auth, admin yonetimi ve ileride gercek yetkilendirme omu
 - Authorized menu kartlari tiklanabilir.
 - Shell icinde authorized menu alt gorunum mantigi acildi.
 - `Kullanici Tanimi` karti shell icinde ayri alt ekrana geciyor.
-- Diger yonetim ekranlari icin placeholder / hazirlaniyor mantigi suruyor.
+- `Grup Tanimi` karti shell icinde gercek group yonetim ekranina geciyor.
+- `Modul Tanimi` karti shell icinde gercek modul yonetim ekranina geciyor.
 - Login ekranindaki eski mock kullanici dili temizlendi.
 - Login paneli ve login view metinleri gercek yerel dogrulama akisina gore guncellendi.
 - Admin ornek hesabinin gorunurlugu korunuyor.
@@ -65,6 +66,20 @@ Bu yapi korunarak local auth, admin yonetimi ve ileride gercek yetkilendirme omu
 - Yeni kullanici ilk gecici parola ile giris yapabiliyor.
 - Uygulama kapatilip yeniden acildiginda kullanici kayitlari kalici olarak geliyor.
 - Silinen kullanici kaydi kapat-ac sonrasinda da silinmis kaliyor.
+- Built-in admin delete korumasi runtime olarak teyit edildi.
+- Admin disi kullanicilarin yonetim menusu gorunurlugu operator akisina dogru daraltildi.
+- Shell icinde calisan Isar-backed `Grup Tanimi` yuzeyi gercek akisa baglandi.
+- Group list / create / update / delete akislarinin saha testi yapildi ve calistigi teyit edildi.
+- Built-in yonetici grubu korumasi aktif ve dogrulandi.
+- Shell icinde calisan Isar-backed `Modul Tanimi` yuzeyi gercek akisa baglandi.
+- `shell_page.dart` icinde `module-management` gercek view'a bagli.
+- `LocalModule` modelindeki `iconKey` alani aktif kararin parcasi olarak kullaniliyor.
+- Modul adi, aciklama, aktif/pasif, silme ve kaydetme akislarinin saha testi yapildi.
+- Yeni modul ekleme ve silme calisiyor.
+- Built-in temel moduller listede gorunuyor.
+- Modul ikonu ilk olusturma aninda basliga gore seciliyor.
+- Ikon sonraki duzenlemelerde sabit kalacak mantikla ele aliniyor.
+- Kullanici, Grup ve Modul Tanimi ekranlarinin ucu de shell icinde gercek view olarak aciliyor ve temel saha testlerinden gecmis durumda.
 - Authorized menu gecisi calisiyor.
 
 ## Mimari Not
@@ -72,27 +87,28 @@ Bu yapi korunarak local auth, admin yonetimi ve ileride gercek yetkilendirme omu
 - Kullanici verisinde grup ve modul alanlari bulunmalidir.
 - Grup tarafi gercek domain alani olarak Isar'da tutulabilir.
 - Modul atamasi ise gercek final ID yapisi netlesene kadar gecici staging mantigiyla ele alinmaktadir.
+- Yonetici yetkisi yalnizca Admin icin ele alinmaktadir.
+- Yonetici grubunda olmayan kullanicilar kullanici/grup/modul yonetim alanlarini ve ilgili menuleri gormez.
+- Grup tanimlari ileride genisledikce yetki kararlarini admin verecektir.
 - Ozet karar:
   - Group = gercek domain alani
   - Module assignment = gecici staging alani
 
 ## Acik Risk / Dikkat Notu
 
-- Built-in admin silinemiyor korumasi kod duzeyinde mevcut; bu checkpointte manuel runtime teyidi henuz acik not olarak duruyor.
 - Authorized menu kaynagi halen gecici / mock role-based yapi uzerinden besleniyor.
 - Rol cozumu halen gecici mantikta.
 - Su anda yalnizca `Yonetici` grup yapisi bulundugu icin farkli grup senaryolari henuz test edilmedi.
 - Modul tarafi bilincli olarak staging alani mantiginda ilerliyor.
-- `Grup Tanimi`, `Modul Tanimi` ve `Sifre Guncelle` ekranlari halen placeholder / hazirlik asamasinda.
+- Modul metadata ve daha derin baglanti yapisi PostgreSQL sonrasi faza birakildi.
+- `Sifre Guncelle` ekrani halen placeholder / hazirlik asamasinda.
 
 ## Sonraki Adim
 
-1. Built-in admin delete korumasi icin kisa runtime teyidi
-2. Grup Tanimi ekranina gecis
-3. Modul Tanimi ekranina gecis
-4. Yetkili menuleri kademeli olarak gercek veri omurgasina baglama
-5. Session persistence daha sonra
-6. PostgreSQL entegrasyon plani daha sonra
+1. `Kullanici Tanimi` ekranindaki modul staging alanini sabit secim listesinden cikarip gercek `LocalModule` kayitlarindan beslemek
+2. Yetkili menuleri ve ekran erisim mantigini kademeli olarak gercek veri omurgasiyla hizalamak
+3. Session persistence daha sonra
+4. PostgreSQL entegrasyon plani daha sonra
 
 ## Dokumantasyon
 

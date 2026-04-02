@@ -2,6 +2,26 @@
 
 ## 2026-04-02
 
+### Management Screens Checkpoint
+
+#### Dogrulandi / Calisiyor
+
+- `Modul Tanimi` gercek view'a baglandi.
+- `LocalModule.iconKey` karari uygulandi.
+- Modul ekleme ve silme saha testi gecti.
+- Kullanici / Grup / Modul yonetim ekranlari shell icinde gercek akisa tasinmis oldu.
+- Admin disi kullanici gorunurlugu operator akisina dogru daraltildi.
+- `Grup Tanimi` placeholder olmaktan cikti; gercek Isar-backed akisla calisiyor.
+- Built-in yonetici grubu korumasinin calistigi saha testleriyle teyit edildi.
+- Built-in admin delete korumasi runtime olarak teyit edildi.
+
+#### Acik Risk / Dikkat Notu
+
+- Authorized menu / role modeli halen gecis asamasinda.
+- Module assignment halen staging mantiginda.
+- Modul metadata detaylari ve daha derin baglanti yapisi PostgreSQL sonrasi faza birakildi.
+- Session persistence sonraki fazda duruyor.
+
 ### Checkpoint Alignment Update
 
 #### Dogrulandi / Calisiyor
@@ -38,17 +58,15 @@
 
 #### Acik Risk / Dikkat Notu
 
-- Built-in admin delete korumasi kodda mevcut; manuel runtime teyidi henuz acik not olarak birakildi.
 - Authorized menu kaynaginin halen gecici / mock role-based yapi oldugu notu korundu.
 - Rol cozumunun halen gecici mantikta oldugu notu korundu.
 - Farkli grup senaryolarinin henuz test edilmedigi kayda gecirildi.
-- `Grup Tanimi`, `Modul Tanimi` ve `Sifre Guncelle` ekranlarinin placeholder / hazirlik asamasinda oldugu notu korundu.
+- `Sifre Guncelle` ekraninin placeholder / hazirlik asamasinda oldugu notu korundu.
 
 #### Sonraki Adim
 
-- Built-in admin delete korumasi icin kisa runtime teyidi
-- Siradaki gelistirme isinin `Grup Tanimi` ekrani oldugu kaydedildi.
-- Sonrasinda `Modul Tanimi` ekranina gecis planlandigi not edildi.
+- `Kullanici Tanimi` ekranindaki modul staging alanini gercek `LocalModule` kayitlarindan besleme isi sonraki yakin adim olarak not edildi.
+- Yetkili menuleri ve ekran erisim mantigini gercek veri omurgasiyla hizalama isi sonraki faza tasindi.
 
 ## 2026-04-01
 

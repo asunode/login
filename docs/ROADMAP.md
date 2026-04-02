@@ -43,7 +43,7 @@
 - Authorized menu kartlari tiklanabilir.
 - Shell icinde authorized menu alt gorunum mantigi acildi.
 - `Kullanici Tanimi` karti shell icinde ayri alt ekrana geciyor.
-- Diger yonetim ekranlari placeholder / hazirlaniyor mantiginda.
+- Yonetim ekranlari kademeli olarak gercek shell view'larina tasiniyor.
 
 ## Phase 4: User Management Integration
 
@@ -56,26 +56,41 @@
 - `stagedModuleCodes` ile modul staging akisi aktif.
 - Create / update / delete / reset password akislarinin kodu uygulanmis durumda.
 - Yeni kullanici ekleme, gecici parola ile giris, restart sonrasi kalicilik ve silme kaliciligi dogrulandi.
+- Built-in admin delete korumasi runtime olarak teyit edildi.
+- Admin disi kullanicilarin yonetim menusu gorunurlugu operator akisina dogru daraltildi.
 
 ### Acik Risk / Dikkat Notu
 
-- Built-in admin delete korumasi kod duzeyinde mevcut; manuel runtime teyidi bu fazda kisa acik not olarak bekliyor.
 - Farkli grup senaryolari henuz test edilmedi; mevcut durumda yalnizca `Yonetici` grup yapisi bulunuyor.
 
 ## Phase 5: Group / Module Management
 
-### Sonraki Adim
+### Dogrulandi / Calisiyor
 
-- `Grup Tanimi` ekranina gecis
-- `Modul Tanimi` ekranina gecis
-- Group alanini gercek domain kaydi olarak buyutme
-- Module assignment mantigini staging uzerinden kontrollu tasima
+- `Grup Tanimi` shell icinde gercek view olarak aciliyor; placeholder degil.
+- Isar-backed group list / create / update / delete akisi acik.
+- Built-in yonetici grubu korunuyor.
+- Saha testi yapildi ve calistigi teyit edildi.
+- `Modul Tanimi` shell icinde gercek view olarak aciliyor; placeholder degil.
+- `shell_page.dart` icinde `module-management` gercek view'a baglandi.
+- `LocalModule` modelinde `iconKey` alani mevcut ve aktif kararin parcasi.
+- Modul adi, aciklama, aktif/pasif, silme ve kaydetme akislarinin saha testi yapildi.
+- Yeni modul ekleme ve silme calisiyor.
+- Built-in temel moduller listede gorunuyor.
+- Modul ikonu ilk olusturma aninda basliga gore seciliyor.
+- Ikon sonrasinda sabit kalacak mantikla ele aliniyor.
+
+### Acik Risk / Dikkat Notu
+
+- Module assignment mantigi henuz kullanici ustunde staging olarak tutuluyor.
+- Modul metadata ve daha derin baglanti yapisi PostgreSQL sonrasi faza birakildi.
 
 ## Phase 6: Real Authorization Model
 
 ### Sonraki Adim
 
-- Yetkili menuleri kademeli olarak gercek veri omurgasina baglama
+- `Kullanici Tanimi` ekranindaki modul staging alanini gercek `LocalModule` verisine baglama
+- Yetkili menuleri ve ekran erisim mantigini kademeli olarak gercek veri omurgasiyla hizalama
 - Mock role-based menu mantigindan kontrollu cikis
 - Gercek authorization modelini local control verisiyle hizalama
 

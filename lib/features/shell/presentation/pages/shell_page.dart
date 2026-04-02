@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,11 +17,14 @@ import '../../../auth/domain/models/app_user.dart';
 import '../../../auth/domain/models/authorized_menu_item.dart';
 import '../../../auth/presentation/views/authorized_menu_view.dart';
 import '../../../auth/presentation/views/login_view.dart';
+import '../../../group_management/presentation/views/group_management_view.dart';
 import '../../../home/presentation/views/info_view.dart';
+import '../../../module_management/presentation/views/module_management_view.dart';
 import '../../../session/data/repositories/in_memory_session_repository.dart';
 import '../../../session/domain/contracts/session_repository.dart';
 import '../../../session/domain/models/app_session.dart';
 import '../../../settings/presentation/views/settings_view.dart';
+import '../../../user_management/presentation/views/user_management_view.dart';
 import '../models/shell_section.dart';
 import '../widgets/shell_bottom_bar.dart';
 import '../widgets/shell_top_bar.dart';
@@ -52,6 +55,7 @@ class _ShellPageState extends State<ShellPage> {
   AppUser? _currentUser;
   AppSession? _currentSession;
   List<AuthorizedMenuItem> _authorizedMenus = const [];
+  AuthorizedMenuItem? _selectedAuthorizedMenu;
   String? _loginError;
 
   String get _subtitle {
@@ -61,7 +65,7 @@ class _ShellPageState extends State<ShellPage> {
       case ShellSection.login:
         return 'Kullanıcı Girişi';
       case ShellSection.authorizedMenu:
-        return 'Yetkili Menü';
+        return _selectedAuthorizedMenu?.title ?? 'Yetkili Menü';
       case ShellSection.settings:
         return 'Bağlantı Ayarları';
     }
@@ -74,6 +78,10 @@ class _ShellPageState extends State<ShellPage> {
       case ShellSection.login:
         return 'Kullanıcı doğrulama ekranı açık';
       case ShellSection.authorizedMenu:
+        if (_selectedAuthorizedMenu != null) {
+          return '${_selectedAuthorizedMenu!.title} görünümü açık';
+        }
+
         final sessionName =
             _currentSession?.displayName.trim().isNotEmpty == true
                 ? _currentSession!.displayName
@@ -157,6 +165,7 @@ class _ShellPageState extends State<ShellPage> {
       _currentUser = user;
       _currentSession = session;
       _authorizedMenus = menus;
+      _selectedAuthorizedMenu = null;
       _loginError = null;
       _section = ShellSection.authorizedMenu;
     });
@@ -167,6 +176,7 @@ class _ShellPageState extends State<ShellPage> {
   Future<void> _goToLoginRoot() async {
     setState(() {
       _section = ShellSection.login;
+      _selectedAuthorizedMenu = null;
       _loginError = null;
     });
     await _rememberSection(ShellSection.login);
@@ -180,6 +190,21 @@ class _ShellPageState extends State<ShellPage> {
 
     setState(() {
       _section = ShellSection.authorizedMenu;
+      _selectedAuthorizedMenu = null;
+      _loginError = null;
+    });
+    await _rememberSection(ShellSection.authorizedMenu);
+  }
+
+  Future<void> _openAuthorizedMenu(AuthorizedMenuItem menu) async {
+    if (!_isAuthenticated || _currentUser == null) {
+      await _goToLoginRoot();
+      return;
+    }
+
+    setState(() {
+      _section = ShellSection.authorizedMenu;
+      _selectedAuthorizedMenu = menu;
       _loginError = null;
     });
     await _rememberSection(ShellSection.authorizedMenu);
@@ -226,6 +251,7 @@ class _ShellPageState extends State<ShellPage> {
       _currentSession = null;
       _currentUser = null;
       _authorizedMenus = const [];
+      _selectedAuthorizedMenu = null;
       _loginError = null;
       _section = ShellSection.login;
     });
@@ -250,6 +276,35 @@ class _ShellPageState extends State<ShellPage> {
     exit(0);
   }
 
+  Widget _buildAuthorizedSubView(AuthorizedMenuItem menu) {
+    switch (menu.id) {
+      case 'user-management':
+        return UserManagementView(
+          onBack: () {
+            _goToAuthorizedRoot();
+          },
+        );
+      case 'group-management':
+        return GroupManagementView(
+          onBack: () {
+            _goToAuthorizedRoot();
+          },
+        );
+      case 'module-management':
+        return ModuleManagementView(
+          onBack: () {
+            _goToAuthorizedRoot();
+          },
+        );
+      default:
+        return _AuthorizedMenuPlaceholderView(
+          title: menu.title,
+          description: menu.description,
+          onBack: _goToAuthorizedRoot,
+        );
+    }
+  }
+
   Widget _buildSectionView() {
     switch (_section) {
       case ShellSection.info:
@@ -266,9 +321,15 @@ class _ShellPageState extends State<ShellPage> {
             errorText: _loginError,
           );
         }
+
+        if (_selectedAuthorizedMenu != null) {
+          return _buildAuthorizedSubView(_selectedAuthorizedMenu!);
+        }
+
         return AuthorizedMenuView(
           user: _currentUser!,
           menus: _authorizedMenus,
+          onMenuTap: _openAuthorizedMenu,
         );
       case ShellSection.settings:
         return const SettingsView();
@@ -300,21 +361,23 @@ class _ShellPageState extends State<ShellPage> {
               subtitle: _subtitle,
               isDarkMode: widget.isDarkMode,
               onTitleTap: _handleTitleTap,
-              onHomeTap: () {
+              onHomeTap: () async {
                 setState(() {
                   _section = ShellSection.info;
+                  _selectedAuthorizedMenu = null;
                   _loginError = null;
                 });
-                _rememberSection(ShellSection.info);
+                await _rememberSection(ShellSection.info);
               },
               onThemeToggle: widget.onToggleTheme,
               onUserTap: _handleUserTap,
-              onSettingsTap: () {
+              onSettingsTap: () async {
                 setState(() {
                   _section = ShellSection.settings;
+                  _selectedAuthorizedMenu = null;
                   _loginError = null;
                 });
-                _rememberSection(ShellSection.settings);
+                await _rememberSection(ShellSection.settings);
               },
               showLogout: _isAuthenticated,
               onLogoutTap: _handleLogout,
@@ -330,6 +393,79 @@ class _ShellPageState extends State<ShellPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _AuthorizedMenuPlaceholderView extends StatelessWidget {
+  const _AuthorizedMenuPlaceholderView({
+    required this.title,
+    required this.description,
+    required this.onBack,
+  });
+
+  final String title;
+  final String description;
+  final Future<void> Function() onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final primaryText = brightness == Brightness.dark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimary;
+    final secondaryText = brightness == Brightness.dark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondary;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 24, 48, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextButton.icon(
+            onPressed: () => onBack(),
+            icon: const Icon(Icons.arrow_back),
+            label: const Text('Yetkili Menüye Dön'),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: AppTextStyles.h1.copyWith(
+              fontSize: 30,
+              fontWeight: FontWeight.w700,
+              color: primaryText,
+            ),
+          ),
+          const SizedBox(height: 12),
+          NeumorphicContainer(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Bu alan hazırlanıyor.',
+                  style: AppTextStyles.h2.copyWith(color: primaryText),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  description,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: secondaryText,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Önce Kullanıcı Tanımı ekranı gerçek yapıya alınacak, ardından diğer yönetim ekranları kademeli olarak bu akışa bağlanacak.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: secondaryText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
