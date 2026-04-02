@@ -37,13 +37,18 @@ const LocalGroupSchema = CollectionSchema(
       name: r'isBuiltIn',
       type: IsarType.bool,
     ),
-    r'name': PropertySchema(
+    r'moduleCodes': PropertySchema(
       id: 4,
+      name: r'moduleCodes',
+      type: IsarType.stringList,
+    ),
+    r'name': PropertySchema(
+      id: 5,
       name: r'name',
       type: IsarType.string,
     ),
     r'updatedAt': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -83,6 +88,13 @@ int _localGroupEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.description.length * 3;
+  bytesCount += 3 + object.moduleCodes.length * 3;
+  {
+    for (var i = 0; i < object.moduleCodes.length; i++) {
+      final value = object.moduleCodes[i];
+      bytesCount += value.length * 3;
+    }
+  }
   bytesCount += 3 + object.name.length * 3;
   return bytesCount;
 }
@@ -97,8 +109,9 @@ void _localGroupSerialize(
   writer.writeString(offsets[1], object.description);
   writer.writeBool(offsets[2], object.isActive);
   writer.writeBool(offsets[3], object.isBuiltIn);
-  writer.writeString(offsets[4], object.name);
-  writer.writeDateTime(offsets[5], object.updatedAt);
+  writer.writeStringList(offsets[4], object.moduleCodes);
+  writer.writeString(offsets[5], object.name);
+  writer.writeDateTime(offsets[6], object.updatedAt);
 }
 
 LocalGroup _localGroupDeserialize(
@@ -113,8 +126,9 @@ LocalGroup _localGroupDeserialize(
   object.id = id;
   object.isActive = reader.readBool(offsets[2]);
   object.isBuiltIn = reader.readBool(offsets[3]);
-  object.name = reader.readString(offsets[4]);
-  object.updatedAt = reader.readDateTime(offsets[5]);
+  object.moduleCodes = reader.readStringList(offsets[4]) ?? [];
+  object.name = reader.readString(offsets[5]);
+  object.updatedAt = reader.readDateTime(offsets[6]);
   return object;
 }
 
@@ -134,8 +148,10 @@ P _localGroupDeserializeProp<P>(
     case 3:
       return (reader.readBool(offset)) as P;
     case 4:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringList(offset) ?? []) as P;
     case 5:
+      return (reader.readString(offset)) as P;
+    case 6:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -595,6 +611,231 @@ extension LocalGroupQueryFilter
     });
   }
 
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'moduleCodes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'moduleCodes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'moduleCodes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'moduleCodes',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'moduleCodes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'moduleCodes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'moduleCodes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'moduleCodes',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'moduleCodes',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'moduleCodes',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'moduleCodes',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'moduleCodes',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'moduleCodes',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'moduleCodes',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'moduleCodes',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition>
+      moduleCodesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'moduleCodes',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
   QueryBuilder<LocalGroup, LocalGroup, QAfterFilterCondition> nameEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -975,6 +1216,12 @@ extension LocalGroupQueryWhereDistinct
     });
   }
 
+  QueryBuilder<LocalGroup, LocalGroup, QDistinct> distinctByModuleCodes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'moduleCodes');
+    });
+  }
+
   QueryBuilder<LocalGroup, LocalGroup, QDistinct> distinctByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1018,6 +1265,13 @@ extension LocalGroupQueryProperty
   QueryBuilder<LocalGroup, bool, QQueryOperations> isBuiltInProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isBuiltIn');
+    });
+  }
+
+  QueryBuilder<LocalGroup, List<String>, QQueryOperations>
+      moduleCodesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'moduleCodes');
     });
   }
 

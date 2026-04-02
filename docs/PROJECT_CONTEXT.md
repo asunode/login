@@ -2,15 +2,15 @@
 
 ## Purpose
 
-LoginShell, shell-first Flutter desktop omurgasi uzerinde gelisen bir local auth, authorized menu, connection profile ve ileride genisleyecek yonetim ekranlari projesidir.
+LoginShell, shell-first Flutter Windows desktop omurgasi uzerinde gelisen bir local auth, authorized menu, connection profile ve kademeli yonetim ekranlari projesidir.
 
 ## Dogrulandi / Calisiyor
 
 ### Shell Omurgasi
 
-- Proje shell-first masaustu akisiyla calisiyor.
+- Proje shell-first Windows desktop akisiyla calisiyor.
 - Uygulama acilisinda shell gorunur; ust bar, orta alan ve alt bar birlikte yuklenir.
-- Varsayilan root orta alan mantigi olarak InfoView korunur.
+- Varsayilan root orta alan mantigi olarak `InfoView` korunur.
 - Ust bar davranislari aktif durumdadir:
   - Home
   - tema degisimi
@@ -22,122 +22,74 @@ LoginShell, shell-first Flutter desktop omurgasi uzerinde gelisen bir local auth
   - login varken kullanicinin display name degeri
   - tiklandiginda login root veya authorized menu root
 - Logout ve Safe Exit ayrimi korunmustur.
-- Guvenli cikista `exit(0)` nedeniyle debug konsolunda `Lost connection to device` gorulmesi normal davranistir; hata gibi ele alinmamaktadir.
+- Guvenli cikista `exit(0)` nedeniyle debug konsolunda `Lost connection to device` gorulmesi normal davranis notudur.
 
 ### Auth / Isar / Session
 
-- Login artik eski mock user listesi uzerinden degil, Isar-backed local auth akisi uzerinden calisir.
+- Login Isar-backed local auth akisi uzerinden calisir.
 - `admin / admin123` ile giris dogrulanmistir.
 - Yanlis parola reddedilmektedir.
 - Logout sonrasi login ekranina donus calismaktadir.
-- `LocalUser`, `LocalGroup`, `LocalModule` modelleri projede mevcuttur.
+- `LocalUser`, `LocalGroup`, `LocalModule` modelleri aktif akista kullanilmaktadir.
 - Bootstrap / seed yapisi calismaktadir.
 - Built-in admin kullanici seed edilir.
 - Built-in yonetici grubu seed edilir.
 - Temel moduller seed edilir.
 - Sifreler duz metin tutulmaz; hash mantigi kullanilir.
 - Session halen memory tabanlidir; persistence bu checkpointte henuz eklenmemistir.
-- Authorized menu icerigi final veri modeli seviyesinde degildir; gecis asamasindadir.
 
-### Menu / Yetkili Alan
+### Yonetim Ekranlari
 
-- Admin yetkili menu kart basliklari final hedefe yaklastirilmistir:
-  - `Kullanici Tanimi`
-  - `Grup Tanimi`
-  - `Modul Tanimi`
-  - `Sifre Guncelle`
-- Authorized menu kartlari tiklanabilirdir.
-- Shell icinde authorized menu alt gorunum mantigi acilmistir.
-- `Kullanici Tanimi` karti shell icinde ayri alt ekrana gecer.
-- `Grup Tanimi` karti shell icinde gercek group yonetim ekranina gecer.
-- `Modul Tanimi` karti shell icinde gercek modul yonetim ekranina gecer.
-- Admin disi kullanicilarin gorunurlugu operator akisina dogru daraltilmistir.
-- Yonetici yetkisi yalnizca Admin icin ele alinmaktadir.
-- Yonetici grubunda olmayan kullanicilar kullanici/grup/modul yonetim alanlarini ve ilgili menuleri gormez.
-- Grup tanimlari ileride genisledikce yetki kararlarini admin verecektir.
+- `Kullanici Tanimi`, `Grup Tanimi` ve `Modul Tanimi` ekranlarinin ucu de shell icinde gercek view olarak acilir.
+- `Kullanici Tanimi` ekrani gercek `LocalUser` kayitlariyla calisir.
+- `Grup Tanimi` ekrani gercek `LocalGroup` kayitlariyla calisir.
+- `Modul Tanimi` ekrani gercek `LocalModule` kayitlariyla calisir.
+- Bu uc ekran placeholder degildir; shell akisi icine bagli gercek yonetim yuzeyleridir.
 
-### Login / UI Metinleri
+### Modul / Grup / Kullanici Zinciri
 
-- Login ekranindaki eski mock kullanici dili temizlenmistir.
-- Login paneli ve login view metinleri gercek yerel dogrulama akisina gore guncellenmistir.
-- Admin ornek hesabinin gorunurlugu korunmustur.
-- Eski mock anlatimi bu checkpointte aktif gercek durum olarak kullanilmamaktadir.
+- `LocalGroup` modeline `moduleCodes` alani eklenmistir.
+- Boylesiyle grup uzerinde gercek modul paketi tasinabilir hale gelmistir.
+- `Grup Tanimi` ekrani artik grup uzerine gercek modul paketi kaydedebilmektedir.
+- `Kullanici Tanimi` ekranindaki modul listesi artik sabit / hardcoded secimlerden degil, gercek `LocalModule` kayitlarindan beslenir.
+- `Modul Tanimi` ekrani mevcutta gercek modul kayitlariyla calismaya devam eder.
+- Sonuc olarak `Modul -> Grup -> Kullanici` zinciri uygulama icinde fiilen acilmistir.
 
-### Settings
+### Yetkili Menu Gecisi
 
-- `connection_profile_form.dart` icindeki overflow problemi scroll yaklasimiyla giderilmistir.
-- Bu konu kapanmis kabul edilir.
-- Gerekirse ileride UI polish yapilabilir; ancak bloklayici hata notu yoktur.
-
-### Local User Model
-
-- `LocalUser` modeline modul tarafi icin gecici staging mantigi eklenmistir.
-- `stagedModuleCodes` alani mevcuttur.
-- Bu alanin amaci:
-  - final modul ID yapisi gelene kadar gecici kayit tutmak
-  - kullanici ustunde staging mantigiyla modul secimini tasimak
-- `dart run build_runner build --delete-conflicting-outputs` basarili calismistir.
-- Analyzer surum uyari notu bloklayici degildir.
-
-### Kullanici Tanimi Ekrani
-
-- Shell icinde calisan ilk gercek `Kullanici Tanimi` yuzeyi kurulmus ve test edilmistir.
-- Ekran shell icine oturur.
-- Geri donus akisi calisir.
-- Kullanici listesi ve sag panel form mantigi acilmistir.
-- Grup alani ve modul staging alani UI seviyesinde gosterilir.
-- Built-in admin korumasi UI seviyesinde dusunulmustur.
-- Kullanici listesi gercek `LocalUser` kayitlarindan gelir.
-- Grup secimi gercek `LocalGroup` verisiyle acilir.
-- `stagedModuleCodes` alani okunup yazilir.
-- Yeni kullanici ekleme calisir.
-- Gecici parola ile giris calisir.
-- Kapat-ac sonrasi kalicilik calisir.
-- Silme kaliciligi calisir.
-- Built-in admin delete korumasi runtime olarak teyit edilmistir.
-
-### Grup Tanimi Ekrani
-
-- `Grup Tanimi` placeholder degildir; shell icinde gercek view olarak acilir.
-- Isar-backed group list / create / update / delete akisi aciktir.
-- Built-in yonetici grubu korunur.
-- Saha testi yapilmis ve calistigi teyit edilmistir.
-
-### Modul Tanimi Ekrani
-
-- `Modul Tanimi` placeholder degildir; shell icinde gercek view olarak acilir.
-- `shell_page.dart` icinde `module-management` gercek view'a baglidir.
-- `LocalModule` modelinde `iconKey` alani mevcuttur.
-- Modul adi, aciklama, aktif/pasif, silme ve kaydetme akislarinin gercek akista oldugu teyit edilmistir.
-- Ikon ilk olusturma aninda basliga gore secilir.
-- Ikon sonrasinda sabit kalacak mantikla ele alinir.
-- Yeni modul ekleme ve silme saha testlerinde calismistir.
-- Built-in temel moduller listede gorunur.
-- Modul metadata ve daha derin baglanti yapisi PostgreSQL sonrasi faza birakilan teknik borc olarak tutulur.
+- Yetkili menu cozumu bir gecis adimi daha ilerlemistir.
+- `mock_authorized_menu_repository.dart` dosya adi mock kalmis olsa da, cozum artik kullanicinin grubunu okuyup grup uzerindeki `moduleCodes` degerlerine gore gorunur menu uretebilir.
+- Admin disi kullanicilar icin admin-only moduller gorunmez.
+- Demo kullanicisinda bos menu davranisi kontrollu bicimde dogrulanmistir.
+- Login kullanicisinda grup uzerinden gelen `TeknikServis` modulu goruntulenmistir.
+- Muhasebe kullanicisinda grup uzerinden gelen coklu modul paketi goruntulenmistir.
+- Bu saha dogrulamalariyla grup bazli modul yetkilendirme yolu pratikte test edilmistir.
 
 ## Mimari Karar
 
-- Kullanici verisinde grup ve modul alanlari bulunmalidir.
-- Grup tarafi gercekci kayit olarak Isar'da tutulabilir.
-- Modul tarafi ise ileride netlesecek gercek ID yapisina kadar gecici kayit / staging mantigiyla ele alinmaktadir.
-- Yonetici yetkisi yalnizca Admin icin ele alinmaktadir.
-- Yonetici grubunda olmayan kullanicilar kullanici/grup/modul yonetim alanlarini ve ilgili menuleri gormez.
-- Grup tanimlari ileride genisledikce yetki kararlarini admin verecektir.
-- Ozet:
-  - Group = gercek domain alani
-  - Module assignment = gecici staging alani
+- Final hedef yon artik daha nettir:
+  - Modul = calisma alani
+  - Grup = modul paketi
+  - Kullanici = gruba bagli yetkili kisi
+- Gercek menu cozumu artik grup bazli calisir.
+- Ancak sistem halen hibrit gecis asamasindadir.
+- Kullanici ustundeki `stagedModuleCodes` alani tamamen kaldirilmamis durumdadir.
+- Bu alan artik ana yetki kaynagi olarak anlatilmamali; gecis / migrasyon / legacy override alani rolune yaklasmaktadir.
+- Final authorization modeli tam oturdugunda bu alan:
+  - kaldirilmali
+  - veya yalnizca ikincil override / gecis notu rolune indirilmeli
 
 ## Acik Risk / Dikkat Notu
 
-- Yetkili menu icerigi halen kademeli gecis asamasindadir; final authorization modeli olarak yorumlanmamalidir.
+- Yetkili menu cozumunun grup bazli yola gecmis olmasi, final authorization modelinin tamamen tamamlandigi anlamina gelmez.
+- `mock_authorized_menu_repository.dart` halen gecis katmanidir.
 - Session persistence henuz devreye alinmamistir.
-- Module assignment henuz staging mantigindadir.
-- Modul metadata ve daha derin baglanti yapisi PostgreSQL sonrasi faza birakilmistir.
-- Analyzer surum uyari notu bloklayici degildir; ancak gelistirme ortamlarinda izlenmeye devam edilmelidir.
+- `Sifre Guncelle` ekrani halen placeholder / hazirlik asamasindadir.
+- `Modul Staging Alani` teknik borc olarak izlenmelidir; final modelde unutulmamasi gereken temizlik kalemidir.
 
 ## Sonraki Adim
 
-1. `Kullanici Tanimi` ekranindaki modul staging alanini sabit secim listesinden cikarip gercek `LocalModule` kayitlarindan beslemek
-2. Yetkili menuleri ve ekran erisim mantigini kademeli olarak gercek veri omurgasiyla hizalamak
-3. Session persistence daha sonra
-4. PostgreSQL entegrasyon plani daha sonra
+1. `Kullanici Tanimi` ekranini grup bazli gercek yetki modeline daha acik sekilde hizalamak
+2. `Modul Staging Alani`nin nihai rolunu netlestirmek
+3. Uygunsa kullanici ekranindaki modul bolumunu sadeleştirmek
+4. Hibrit authorization katmanlarini kontrollu bicimde final modele yaklastirmak

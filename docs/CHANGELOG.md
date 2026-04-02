@@ -2,6 +2,35 @@
 
 ## 2026-04-02
 
+### Grup Bazli Modul Yetkilendirme Gecisi
+
+#### Dogrulandi / Calisiyor
+
+- `LocalGroup` modeline `moduleCodes` alani eklendi.
+- Grup uzerinde gercek modul paketi tasima yolu acildi.
+- `Kullanici Tanimi` ekranindaki modul listesi sabit / hardcoded secimlerden cikarilip gercek `LocalModule` kayitlarindan beslenir hale getirildi.
+- `Grup Tanimi` ekrani grup uzerine gercek modul paketi kaydedebilir hale geldi.
+- Yetkili menu cozumu, kullanicinin grubunu okuyup grup uzerindeki modul paketinden gorunur menu uretme yonunde guncellendi.
+- Admin disi kullanicilar icin admin-only moduller gorunmez hale geldi.
+- Demo kullanicisinda bos menu davranisi kontrollu bicimde dogrulandi.
+- Login kullanicisinda grup uzerinden gelen `TeknikServis` modulu goruntulendi.
+- Muhasebe kullanicisinda grup uzerinden gelen coklu modul paketi goruntulendi.
+- Boylece `Modul -> Grup -> Kullanici` zincirinin Yetkili Menu uretiminde fiilen calistigi checkpoint seviyesinde dogrulandi.
+
+#### Mimari Not
+
+- Sistem, kullanici ustundeki `stagedModuleCodes` alanina dayanan onceki hibrit yapidan daha grup-merkezli bir authorization yonune ilerledi.
+- Gercek menu cozumu artik grup bazli calisir.
+- `stagedModuleCodes` tamamen kaldirilmis degildir; gecis guvenligi icin fallback / legacy override alanina donusmektedir.
+
+#### Acik Risk / Dikkat Notu
+
+- Bu checkpoint final sade authorization modeli degildir.
+- `mock_authorized_menu_repository.dart` dosya adi mock kalmaya devam etmektedir ve gecis katmani mantigi surmektedir.
+- `Modul Staging Alani`, final model tam oturdugunda kaldirilmali veya yalnizca ikincil role indirilmeli; bu teknik borc unutulmamalidir.
+- Session persistence sonraki fazda duruyor.
+- `Sifre Guncelle` ekrani halen placeholder / hazirlik asamasindadir.
+
 ### Management Screens Checkpoint
 
 #### Dogrulandi / Calisiyor

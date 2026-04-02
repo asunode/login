@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/neumorphic_container.dart';
 import '../../../auth/data/local/models/local_group.dart';
+import '../../../auth/data/local/models/local_module.dart';
 import '../../../auth/data/local/models/local_user.dart';
 
 class UserManagementView extends StatefulWidget {
@@ -29,25 +30,7 @@ class _UserManagementViewState extends State<UserManagementView> {
   final _usernameController = TextEditingController();
   final _displayNameController = TextEditingController();
 
-  final List<_ModuleOption> _moduleOptions = const <_ModuleOption>[
-    _ModuleOption(
-      id: 'user-management',
-      title: 'Kullanıcı Tanımı',
-    ),
-    _ModuleOption(
-      id: 'group-management',
-      title: 'Grup Tanımı',
-    ),
-    _ModuleOption(
-      id: 'module-management',
-      title: 'Modül Tanımı',
-    ),
-    _ModuleOption(
-      id: 'change-password',
-      title: 'Şifre Güncelle',
-    ),
-  ];
-
+  List<_ModuleOption> _moduleOptions = <_ModuleOption>[];
   List<_GroupOption> _groups = <_GroupOption>[];
   List<_UserDraft> _users = <_UserDraft>[];
 
@@ -116,6 +99,7 @@ class _UserManagementViewState extends State<UserManagementView> {
     try {
       final localUsers = await isar.localUsers.where().findAll();
       final localGroups = await isar.localGroups.where().findAll();
+      final localModules = await isar.localModules.where().findAll();
 
       final groups = localGroups
           .where((group) => group.isActive)
@@ -129,6 +113,19 @@ class _UserManagementViewState extends State<UserManagementView> {
           )
           .toList()
         ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+      final modules = localModules
+          .map(_ModuleOption.fromLocalModule)
+          .toList()
+        ..sort((a, b) {
+          if (a.isBuiltIn != b.isBuiltIn) {
+            return a.isBuiltIn ? -1 : 1;
+          }
+          if (a.isActive != b.isActive) {
+            return a.isActive ? -1 : 1;
+          }
+          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        });
 
       final users = localUsers
           .map(_UserDraft.fromLocalUser)
@@ -146,6 +143,14 @@ class _UserManagementViewState extends State<UserManagementView> {
           user.groupName,
           description: 'Mevcut kullanıcı kaydından gelen grup değeri',
         );
+
+        for (final moduleCode in user.stagedModuleIds) {
+          _ensureModuleExists(
+            modules,
+            moduleCode,
+            title: moduleCode,
+          );
+        }
       }
 
       final selectedId = _resolveSelectedUserId(
@@ -158,6 +163,7 @@ class _UserManagementViewState extends State<UserManagementView> {
       }
 
       setState(() {
+        _moduleOptions = modules;
         _groups = groups;
         _users = users;
         _selectedUserId = selectedId;
@@ -230,6 +236,44 @@ class _UserManagementViewState extends State<UserManagementView> {
     );
 
     groups.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  }
+
+  void _ensureModuleExists(
+    List<_ModuleOption> modules,
+    String moduleCode, {
+    required String title,
+  }) {
+    final normalized = moduleCode.trim().toLowerCase();
+    if (normalized.isEmpty) {
+      return;
+    }
+
+    final exists = modules.any(
+      (module) => module.id.trim().toLowerCase() == normalized,
+    );
+    if (exists) {
+      return;
+    }
+
+    modules.add(
+      _ModuleOption(
+        id: moduleCode.trim(),
+        title: title.trim().isEmpty ? moduleCode.trim() : title.trim(),
+        isActive: false,
+        isBuiltIn: false,
+        isLegacy: true,
+      ),
+    );
+
+    modules.sort((a, b) {
+      if (a.isBuiltIn != b.isBuiltIn) {
+        return a.isBuiltIn ? -1 : 1;
+      }
+      if (a.isActive != b.isActive) {
+        return a.isActive ? -1 : 1;
+      }
+      return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+    });
   }
 
   void _fillFromUser(_UserDraft user) {
@@ -512,6 +556,18 @@ class _UserManagementViewState extends State<UserManagementView> {
   List<String> _orderedModuleCodes() {
     final moduleIds = _stagedModuleIds.toList()..sort();
     return moduleIds;
+  }
+
+  String _moduleLabel(_ModuleOption module) {
+    if (module.isLegacy) {
+      return '${module.title} (eski kayıt)';
+    }
+
+    if (!module.isActive) {
+      return '${module.title} (pasif)';
+    }
+
+    return module.title;
   }
 
   String _buildTemporaryPasswordFor(String username) {
@@ -811,29 +867,39 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'Bu seçimler ileride netleşecek gerçek modül ID yapısına kadar geçici kayıt mantığıyla tutulur.',
+                                    'Bu seçimler gerçek LocalModule kayıtlarından beslenir. Staging mantığı, final modül ID yapısı netleşene kadar korunur.',
                                     style: AppTextStyles.bodySmall.copyWith(
                                       color: secondaryText,
                                       height: 1.5,
                                     ),
                                   ),
                                   const SizedBox(height: 12),
-                                  Wrap(
-                                    spacing: 10,
-                                    runSpacing: 10,
-                                    children: _moduleOptions.map((module) {
-                                      final isSelected = _stagedModuleIds
-                                          .contains(module.id);
+                                  if (_moduleOptions.isEmpty)
+                                    Text(
+                                      'Kayıtlı modül bulunamadı.',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: secondaryText,
+                                      ),
+                                    )
+                                  else
+                                    Wrap(
+                                      spacing: 10,
+                                      runSpacing: 10,
+                                      children: _moduleOptions.map((module) {
+                                        final isSelected = _stagedModuleIds
+                                            .contains(module.id);
 
-                                      return FilterChip(
-                                        selected: isSelected,
-                                        label: Text(module.title),
-                                        onSelected: (value) {
-                                          _toggleModule(module.id, value);
-                                        },
-                                      );
-                                    }).toList(),
-                                  ),
+                                        return FilterChip(
+                                          selected: isSelected,
+                                          label: Text(_moduleLabel(module)),
+                                          onSelected: module.isActive
+                                              ? (value) {
+                                                  _toggleModule(module.id, value);
+                                                }
+                                              : null,
+                                        );
+                                      }).toList(),
+                                    ),
                                   const SizedBox(height: 24),
                                   _SectionHeader(
                                     title: 'Koruma Notları',
@@ -1239,8 +1305,24 @@ class _ModuleOption {
   const _ModuleOption({
     required this.id,
     required this.title,
+    required this.isActive,
+    required this.isBuiltIn,
+    required this.isLegacy,
   });
+
+  factory _ModuleOption.fromLocalModule(LocalModule module) {
+    return _ModuleOption(
+      id: module.code,
+      title: module.name,
+      isActive: module.isActive,
+      isBuiltIn: module.isBuiltIn,
+      isLegacy: false,
+    );
+  }
 
   final String id;
   final String title;
+  final bool isActive;
+  final bool isBuiltIn;
+  final bool isLegacy;
 }

@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/neumorphic_container.dart';
 import '../../../auth/data/local/models/local_group.dart';
+import '../../../auth/data/local/models/local_module.dart';
 
 class GroupManagementView extends StatefulWidget {
   const GroupManagementView({
@@ -26,9 +27,12 @@ class _GroupManagementViewState extends State<GroupManagementView> {
   final _descriptionController = TextEditingController();
 
   List<_GroupDraft> _groups = <_GroupDraft>[];
+  List<_ModuleOption> _moduleOptions = <_ModuleOption>[];
 
   String? _selectedGroupId;
   bool _isActive = true;
+  Set<String> _selectedModuleCodes = <String>{};
+  Set<String> _missingModuleCodes = <String>{};
 
   bool _isLoading = true;
   bool _isSaving = false;
@@ -88,9 +92,20 @@ class _GroupManagementViewState extends State<GroupManagementView> {
 
     try {
       final localGroups = await isar.localGroups.where().findAll();
+      final localModules = await isar.localModules.where().findAll();
 
       final groups = localGroups
           .map(_GroupDraft.fromLocalGroup)
+          .toList()
+        ..sort((a, b) {
+          if (a.isBuiltIn != b.isBuiltIn) {
+            return a.isBuiltIn ? -1 : 1;
+          }
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        });
+
+      final moduleOptions = localModules
+          .map(_ModuleOption.fromLocalModule)
           .toList()
         ..sort((a, b) {
           if (a.isBuiltIn != b.isBuiltIn) {
@@ -110,13 +125,15 @@ class _GroupManagementViewState extends State<GroupManagementView> {
 
       setState(() {
         _groups = groups;
+        _moduleOptions = moduleOptions;
         _selectedGroupId = selectedId;
         _isLoading = false;
         _loadError = null;
       });
 
       if (selectedId != null) {
-        final selectedGroup = groups.firstWhere((group) => group.id == selectedId);
+        final selectedGroup =
+            groups.firstWhere((group) => group.id == selectedId);
         _fillFromGroup(selectedGroup);
       } else {
         _prepareNewGroup();
@@ -157,9 +174,20 @@ class _GroupManagementViewState extends State<GroupManagementView> {
     _nameController.text = group.name;
     _descriptionController.text = group.description;
 
+    final normalizedModuleCodes = group.moduleCodes
+        .map(_normalizeCode)
+        .where((code) => code.isNotEmpty)
+        .toSet();
+
+    final availableModuleCodes =
+        _moduleOptions.map((module) => module.normalizedCode).toSet();
+
     setState(() {
       _selectedGroupId = group.id;
       _isActive = group.isActive;
+      _selectedModuleCodes = normalizedModuleCodes;
+      _missingModuleCodes =
+          normalizedModuleCodes.difference(availableModuleCodes);
     });
   }
 
@@ -170,6 +198,8 @@ class _GroupManagementViewState extends State<GroupManagementView> {
     setState(() {
       _selectedGroupId = null;
       _isActive = true;
+      _selectedModuleCodes = <String>{};
+      _missingModuleCodes = <String>{};
     });
   }
 
@@ -180,6 +210,51 @@ class _GroupManagementViewState extends State<GroupManagementView> {
 
   void _startNewGroup() {
     _prepareNewGroup();
+  }
+
+  void _toggleModuleSelection(_ModuleOption module, bool shouldSelect) {
+    if (_isBuiltInSelection) {
+      return;
+    }
+
+    if (!module.isActive && !shouldSelect) {
+      setState(() {
+        _selectedModuleCodes.remove(module.normalizedCode);
+      });
+      return;
+    }
+
+    if (!module.isActive && shouldSelect) {
+      return;
+    }
+
+    setState(() {
+      if (shouldSelect) {
+        _selectedModuleCodes.add(module.normalizedCode);
+      } else {
+        _selectedModuleCodes.remove(module.normalizedCode);
+      }
+    });
+  }
+
+  List<String> _orderedModuleCodesForSave() {
+    final orderedCodes = <String>[];
+    final availableCodes = <String>{};
+
+    for (final module in _moduleOptions) {
+      availableCodes.add(module.normalizedCode);
+      if (_selectedModuleCodes.contains(module.normalizedCode)) {
+        orderedCodes.add(module.code);
+      }
+    }
+
+    final missingCodes = _selectedModuleCodes
+        .where((code) => !availableCodes.contains(code))
+        .toList()
+      ..sort();
+
+    orderedCodes.addAll(missingCodes);
+    return orderedCodes;
   }
 
   Future<void> _saveGroup() async {
@@ -195,6 +270,7 @@ class _GroupManagementViewState extends State<GroupManagementView> {
 
     final name = _nameController.text.trim();
     final description = _descriptionController.text.trim();
+    final moduleCodes = _orderedModuleCodesForSave();
 
     final duplicateGroup = _groups.any(
       (group) =>
@@ -219,6 +295,7 @@ class _GroupManagementViewState extends State<GroupManagementView> {
           ..name = name
           ..description = description
           ..isActive = _isActive
+          ..moduleCodes = moduleCodes
           ..isBuiltIn = false
           ..createdAt = now
           ..updatedAt = now;
@@ -259,6 +336,7 @@ class _GroupManagementViewState extends State<GroupManagementView> {
 
         if (!localGroup.isBuiltIn) {
           localGroup.isActive = _isActive;
+          localGroup.moduleCodes = moduleCodes;
         }
 
         await isar.writeTxn(() async {
@@ -334,6 +412,10 @@ class _GroupManagementViewState extends State<GroupManagementView> {
         });
       }
     }
+  }
+
+  String _normalizeCode(String value) {
+    return value.trim().toLowerCase();
   }
 
   void _showMessage(String message) {
@@ -449,7 +531,7 @@ class _GroupManagementViewState extends State<GroupManagementView> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Grup temel kayıtları bu ekranda yönetilir. Modül atama tarafı sonraki aşamada açılacaktır.',
+            'Grup kaydı artık temel bilgiler yanında modül paketi de taşıyabilir. Böylece Modül -> Grup -> Kullanıcı yetki modeline kontrollü geçiş hazırlanır.',
             style: AppTextStyles.bodyMedium.copyWith(color: secondaryText),
           ),
           const SizedBox(height: 24),
@@ -484,7 +566,7 @@ class _GroupManagementViewState extends State<GroupManagementView> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Grup alanı gerçek domain kaydı olarak tutulur. Yetki ve modül detayları sonraki fazlarda genişletilecektir.',
+                            'Grup alanı gerçek domain kaydı olarak tutulur. Modül paketi bu ekranda toplanır; kullanıcı tarafı bir sonraki adımda bu yapıyı tüketecektir.',
                             style: AppTextStyles.bodySmall.copyWith(
                               color: secondaryText,
                               height: 1.5,
@@ -536,6 +618,101 @@ class _GroupManagementViewState extends State<GroupManagementView> {
                                   ),
                                   const SizedBox(height: 24),
                                   _SectionHeader(
+                                    title: 'Modül Paketi',
+                                    icon: Icons.view_module_outlined,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    _isBuiltInSelection
+                                        ? 'Built-in yönetici grubunda modül paketi bu adımda korunur ve düzenlenmez.'
+                                        : 'Bu gruba dahil modülleri seçin. Kullanıcı yetkisi bir sonraki adımda grup üzerinden okunacaktır.',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: secondaryText,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  if (_moduleOptions.isEmpty)
+                                    NeumorphicContainer(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Text(
+                                        'Henüz tanımlı modül bulunmuyor. Önce Modül Tanımı ekranından modül ekleyin.',
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: secondaryText,
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    Column(
+                                      children: _moduleOptions
+                                          .map(
+                                            (module) => Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 12),
+                                              child: _ModuleListItem(
+                                                module: module,
+                                                isSelected:
+                                                    _selectedModuleCodes.contains(
+                                                  module.normalizedCode,
+                                                ),
+                                                isSelectionLocked:
+                                                    _isBuiltInSelection,
+                                                onChanged: (selected) =>
+                                                    _toggleModuleSelection(
+                                                  module,
+                                                  selected,
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                          .toList(),
+                                    ),
+                                  if (_missingModuleCodes.isNotEmpty) ...[
+                                    const SizedBox(height: 12),
+                                    NeumorphicContainer(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Artık bulunamayan kayıtlı modüller',
+                                            style: AppTextStyles.h3.copyWith(
+                                              color: primaryText,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Bu kodlar mevcut modül listesinde bulunamadı. Veri kaybı olmaması için şimdilik korunurlar.',
+                                            style:
+                                                AppTextStyles.bodySmall.copyWith(
+                                              color: secondaryText,
+                                              height: 1.5,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Wrap(
+                                            spacing: 8,
+                                            runSpacing: 8,
+                                            children: (_missingModuleCodes
+                                                      .toList()
+                                                    ..sort())
+                                                .map(
+                                                  (code) => _MiniTag(
+                                                    label: code,
+                                                    icon:
+                                                        Icons.link_off_outlined,
+                                                  ),
+                                                )
+                                                .toList(),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 24),
+                                  _SectionHeader(
                                     title: 'Durum',
                                     icon: Icons.verified_outlined,
                                   ),
@@ -577,7 +754,7 @@ class _GroupManagementViewState extends State<GroupManagementView> {
                                         ),
                                         const SizedBox(height: 8),
                                         Text(
-                                          'Built-in yönetici grubu silinemez, grup adı değiştirilemez ve pasife alınamaz. Böylece temel yönetim omurgası korunur.',
+                                          'Built-in yönetici grubu silinemez, grup adı değiştirilemez, pasife alınamaz ve bu adımda modül paketi düzenlenmez. Böylece temel yönetim omurgası korunur.',
                                           style:
                                               AppTextStyles.bodySmall.copyWith(
                                             color: secondaryText,
@@ -754,6 +931,11 @@ class _GroupListPanel extends StatelessWidget {
                                           ? Icons.check_circle_outline
                                           : Icons.pause_circle_outline,
                                     ),
+                                    _MiniTag(
+                                      label:
+                                          '${group.moduleCodes.length} modül',
+                                      icon: Icons.view_module_outlined,
+                                    ),
                                   ],
                                 ),
                               ],
@@ -765,6 +947,114 @@ class _GroupListPanel extends StatelessWidget {
                   ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ModuleListItem extends StatelessWidget {
+  const _ModuleListItem({
+    required this.module,
+    required this.isSelected,
+    required this.isSelectionLocked,
+    required this.onChanged,
+  });
+
+  final _ModuleOption module;
+  final bool isSelected;
+  final bool isSelectionLocked;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final primaryText = brightness == Brightness.dark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimary;
+    final secondaryText = brightness == Brightness.dark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondary;
+
+    final canToggle = !isSelectionLocked && (module.isActive || isSelected);
+
+    return Opacity(
+      opacity: canToggle || isSelected ? 1 : 0.72,
+      child: MouseRegion(
+        cursor: canToggle ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: canToggle ? () => onChanged(!isSelected) : null,
+          child: NeumorphicContainer(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            module.name,
+                            style: AppTextStyles.h3.copyWith(color: primaryText),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            module.code,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: secondaryText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Checkbox(
+                      value: isSelected,
+                      onChanged: canToggle
+                          ? (value) => onChanged(value ?? false)
+                          : null,
+                    ),
+                  ],
+                ),
+                if (module.description.trim().isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    module.description,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: secondaryText,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _MiniTag(
+                      label: module.isActive ? 'Aktif' : 'Pasif',
+                      icon: module.isActive
+                          ? Icons.check_circle_outline
+                          : Icons.pause_circle_outline,
+                    ),
+                    if (module.isBuiltIn)
+                      const _MiniTag(
+                        label: 'Built-in',
+                        icon: Icons.shield_outlined,
+                      ),
+                    if (!module.isActive && !isSelected)
+                      const _MiniTag(
+                        label: 'Yeni atama kapalı',
+                        icon: Icons.block_outlined,
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -903,6 +1193,7 @@ class _GroupDraft {
     required this.description,
     required this.isActive,
     required this.isBuiltIn,
+    required this.moduleCodes,
   });
 
   factory _GroupDraft.fromLocalGroup(LocalGroup group) {
@@ -912,6 +1203,7 @@ class _GroupDraft {
       description: group.description,
       isActive: group.isActive,
       isBuiltIn: group.isBuiltIn,
+      moduleCodes: List<String>.from(group.moduleCodes),
     );
   }
 
@@ -920,4 +1212,33 @@ class _GroupDraft {
   final String description;
   final bool isActive;
   final bool isBuiltIn;
+  final List<String> moduleCodes;
+}
+
+class _ModuleOption {
+  const _ModuleOption({
+    required this.code,
+    required this.name,
+    required this.description,
+    required this.isActive,
+    required this.isBuiltIn,
+  });
+
+  factory _ModuleOption.fromLocalModule(LocalModule module) {
+    return _ModuleOption(
+      code: module.code.trim(),
+      name: module.name,
+      description: module.description,
+      isActive: module.isActive,
+      isBuiltIn: module.isBuiltIn,
+    );
+  }
+
+  final String code;
+  final String name;
+  final String description;
+  final bool isActive;
+  final bool isBuiltIn;
+
+  String get normalizedCode => code.trim().toLowerCase();
 }
