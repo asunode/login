@@ -1,73 +1,94 @@
 # Roadmap
 
-## Phase 0: Shell Transfer
+## Phase 1: Shell Foundation
 
-Base desktop shell structure was moved into the project and used as the working foundation.
+### Dogrulandi / Calisiyor
 
-## Phase 1: Shell-First Opening
+- Shell-first masaustu acilis omurgasi aktif.
+- Ust bar, orta alan ve alt bar birlikte calisiyor.
+- Varsayilan root orta alan mantigi olarak InfoView korunuyor.
+- Home, tema degisimi, kullanici slotu / logout, settings ve guvenli cikis davranislari aktif.
+- Sol ust baslik kapsulu root navigation davranisina bagli.
+- Logout ve Safe Exit ayrimi korunuyor.
+- `exit(0)` sonrasi debug konsolunda `Lost connection to device` gorulmesi normal davranis notudur.
 
-The application opens with the shell structure instead of opening directly into login.
+## Phase 2: Local Auth Foundation
 
-## Phase 2: Top Bar Behaviors
+### Dogrulandi / Calisiyor
 
-Home, theme, user, settings, and safe exit flows were connected into the shell.
+- Login Isar-backed local auth akisina baglandi.
+- `admin / admin123` ile giris dogrulandi.
+- Yanlis parola reddediliyor.
+- Logout sonrasi login ekranina donus calisiyor.
+- `LocalUser`, `LocalGroup`, `LocalModule` modelleri mevcut.
+- Bootstrap / seed yapisi aktif.
+- Built-in admin kullanici, built-in yonetici grubu ve temel moduller seed ediliyor.
+- Sifreler hash ile tutuluyor.
+- Session halen memory tabanli.
 
-## Phase 3: Login and Session Visibility
+### Acik Risk / Dikkat Notu
 
-Completed in the current checkpoint:
+- Session persistence bu fazda tamamlanmadi.
+- Authorized menu kaynagi henuz final gercek veri modeli degil.
 
-- password visibility toggle was added to the login form
-- the login screen remained intentionally minimal
-- password rule guidance was not added to the login screen
-- bottom bar session indicator was added
-- locked state is shown when no login is active
-- open session state and username are shown after successful login
-- session data is surfaced through shell state and session layer usage
-- left root title now uses `Login` before authentication and the user's display name after authentication
-- left title capsule root navigation behavior was added
-- top bar user slot now becomes logout after authentication
-- logout confirmation flow was added
-- confirmed logout clears session, user, and menu state and returns the shell to `LoginView`
-- safe exit remains separate from logout
-- bottom-right info text was updated to `ASUNODE LoginShell v0.1.0`
-- `SWorld` to `Login` root title migration is complete
+## Phase 3: Admin Menu Transition
 
-## Phase 4: Authorized Menus
+### Dogrulandi / Calisiyor
 
-Successful login opens the user-specific authorized menu area.
+- Admin yetkili menu kart basliklari final hedefe yaklastirildi:
+  - `Kullanici Tanimi`
+  - `Grup Tanimi`
+  - `Modul Tanimi`
+  - `Sifre Guncelle`
+- Authorized menu kartlari tiklanabilir.
+- Shell icinde authorized menu alt gorunum mantigi acildi.
+- `Kullanici Tanimi` karti shell icinde ayri alt ekrana geciyor.
+- Diger yonetim ekranlari placeholder / hazirlaniyor mantiginda.
 
-## Phase 5: Settings and Connection Profiles
+## Phase 4: User Management Integration
 
-Profile listing, add, edit, activate, and test flows are available and remain focused on profile management rather than operational data loading.
+### Dogrulandi / Calisiyor
 
-## Phase 6: Isar Local Control Layer
+- Shell icinde calisan Isar-backed `Kullanici Tanimi` yuzeyi kuruldu ve test edildi.
+- Geri donus akisi calisiyor.
+- Kullanici listesi gercek `LocalUser` verisinden geliyor.
+- Grup alani gercek `LocalGroup` verisini kullaniyor.
+- `stagedModuleCodes` ile modul staging akisi aktif.
+- Create / update / delete / reset password akislarinin kodu uygulanmis durumda.
+- Yeni kullanici ekleme, gecici parola ile giris, restart sonrasi kalicilik ve silme kaliciligi dogrulandi.
 
-Local users, profiles, settings, and session information are planned to move into persistent Isar-based storage in a later phase.
+### Acik Risk / Dikkat Notu
 
-## Phase 7: Authorization and Menu Scope
+- Built-in admin delete korumasi kod duzeyinde mevcut; manuel runtime teyidi bu fazda kisa acik not olarak bekliyor.
+- Farkli grup senaryolari henuz test edilmedi; mevcut durumda yalnizca `Yonetici` grup yapisi bulunuyor.
 
-Authorization mapping, user-specific menu scope, and stronger local control models remain planned.
+## Phase 5: Group / Module Management
 
-## Phase 8: Main Database Connection
+### Sonraki Adim
 
-Controlled connection to the external operational database remains planned.
+- `Grup Tanimi` ekranina gecis
+- `Modul Tanimi` ekranina gecis
+- Group alanini gercek domain kaydi olarak buyutme
+- Module assignment mantigini staging uzerinden kontrollu tasima
 
-## Phase 9: Operational Modules
+## Phase 6: Real Authorization Model
 
-Main business modules that consume operational data are planned to be added into the shell later.
+### Sonraki Adim
 
-## Phase 10: Security and Hardening
+- Yetkili menuleri kademeli olarak gercek veri omurgasina baglama
+- Mock role-based menu mantigindan kontrollu cikis
+- Gercek authorization modelini local control verisiyle hizalama
 
-Authentication, storage, access control, and production hardening remain future work.
+## Phase 7: Persistence / PostgreSQL
 
-## Next Likely Steps
+### Sonraki Adim
 
-- continue keeping the shell-first structure stable while expanding behavior carefully
-- prepare later password creation / change / reset flows separately from login
-- carry session-backed local control behavior toward future persistence work
-- continue strengthening authenticated shell behavior without widening the architecture unnecessarily
+- Session persistence daha sonra
+- PostgreSQL entegrasyon plani daha sonra
 
-## Deferred and Known
+## Mimari Not
 
-- the `connection_profile_form` overflow on the settings side remains known
-- it was not a target of this checkpoint and should not be treated as newly completed work
+- Kullanici verisinde grup ve modul alanlari olmalidir.
+- Group = gercek domain alani
+- Module assignment = gecici staging alani
+- Bu ayrim, final modul ID yapisi netlesene kadar korunacaktir.

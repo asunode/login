@@ -1,103 +1,100 @@
 # LoginShell
 
-LoginShell is a shell-first Flutter desktop application core for authentication, authorized menus, connection profile management, local control data, and future external database integration.
+LoginShell, shell-first Flutter desktop uygulama omurgasi uzerinde gelisen bir local auth, authorized menu ve yonetim yuzeyi projesidir.
 
-## Project Summary
+## Proje Ozeti
 
-The application does not open directly into a login screen. It starts with a persistent shell layout:
+Uygulama dogrudan login ekraniyla acilmaz. Acilista kalici shell gelir:
 
-- top bar for global actions
-- center area for active content
-- bottom bar for status and session feedback
-- InfoView as the default opening content
+- ust bar
+- orta alan
+- alt bar
+- varsayilan root icerik olarak InfoView
 
-This structure is being expanded in a controlled way for login, authorized navigation, connection profile management, local control data, and future operational modules.
+Bu yapi korunarak local auth, admin yonetimi ve ileride gercek yetkilendirme omurgasi kademeli olarak eklenmektedir.
 
-## Current Architecture
+## Dogrulandi / Calisiyor
 
-- Shell-first layout remains the main application frame.
-- The top bar controls Home, theme toggle, login entry, settings, and safe exit.
-- The center area switches between Info, Login, Authorized Menu, and Settings views.
-- The bottom bar carries both section status and session visibility feedback.
-- Mock data is not consumed directly by views.
-- Repository and contract layers sit between presentation and mock data sources.
-- Local control data is planned for Isar in a later phase.
-- External business and operational data is planned for a separate main database.
+- Shell-first masaustu akisi calisiyor.
+- Uygulama acilisinda shell gorunuyor.
+- Ust bar davranislari calisiyor:
+  - Home
+  - tema degisimi
+  - kullanici slotu / logout davranisi
+  - settings
+  - guvenli cikis
+- Sol ust baslik kapsulu root navigation davranisina bagli:
+  - login yokken `Login`
+  - login varken kullanicinin display name degeri
+  - tiklaninca login root veya authorized menu root
+- Logout ve Safe Exit ayrimi korunuyor.
+- Guvenli cikista `exit(0)` nedeniyle debug konsolunda `Lost connection to device` gorulmesi normal davranistir; hata olarak degerlendirilmemelidir.
+- Login artik eski mock user listesine degil, Isar-backed local auth akisina baglidir.
+- `admin / admin123` ile giris calisiyor.
+- Yanlis parola reddediliyor.
+- Logout sonrasi login ekranina donus calisiyor.
+- `LocalUser`, `LocalGroup`, `LocalModule` modelleri projede mevcut.
+- Bootstrap / seed yapisi calisiyor.
+- Built-in admin kullanici, built-in yonetici grubu ve temel moduller seed ediliyor.
+- Sifre duz metin tutulmuyor; hash mantigi kullaniliyor.
+- Session halen memory tabanlidir; persistence bu checkpointte yoktur.
+- Admin authorized menu kart basliklari final hedefe yaklastirildi:
+  - `Kullanici Tanimi`
+  - `Grup Tanimi`
+  - `Modul Tanimi`
+  - `Sifre Guncelle`
+- Authorized menu kartlari tiklanabilir.
+- Shell icinde authorized menu alt gorunum mantigi acildi.
+- `Kullanici Tanimi` karti shell icinde ayri alt ekrana geciyor.
+- Diger yonetim ekranlari icin placeholder / hazirlaniyor mantigi suruyor.
+- Login ekranindaki eski mock kullanici dili temizlendi.
+- Login paneli ve login view metinleri gercek yerel dogrulama akisina gore guncellendi.
+- Admin ornek hesabinin gorunurlugu korunuyor.
+- `connection_profile_form.dart` icindeki overflow problemi scroll yaklasimiyla giderildi.
+- UI polish ihtiyaci olabilir; ancak bu konu bloklayici hata olarak kayitli degildir.
+- `LocalUser` modeline modul tarafi icin gecici staging mantigi eklendi.
+- `stagedModuleCodes` alani vardir.
+- Bu alan, final modul ID yapisi gelene kadar gecici modul secim kaydi tasimak icin kullanilir.
+- `dart run build_runner build --delete-conflicting-outputs` basarili calisti.
+- Analyzer surum uyarisi not seviyesindedir; bloklayici degildir.
+- Shell icinde calisan Isar-backed `Kullanici Tanimi` yuzeyi kuruldu ve aktif akisa baglandi.
+- Kullanici listesi gercek `LocalUser` kayitlarindan geliyor.
+- Grup secimi gercek `LocalGroup` verisiyle aciliyor.
+- `stagedModuleCodes` alani gercekten okunup yaziliyor.
+- Yeni kullanici ekleme calisiyor.
+- Yeni kullanici ilk gecici parola ile giris yapabiliyor.
+- Uygulama kapatilip yeniden acildiginda kullanici kayitlari kalici olarak geliyor.
+- Silinen kullanici kaydi kapat-ac sonrasinda da silinmis kaliyor.
+- Authorized menu gecisi calisiyor.
 
-## Working Features
+## Mimari Not
 
-- Application opens on Windows desktop with the shell layout.
-- Top bar actions are active.
-- Bottom bar is active.
-- Light and dark theme switching works.
-- LoginView opens from the user action.
-- Mock authentication flow works.
-- AuthorizedMenuView opens after successful login.
-- SettingsView opens from the settings action.
-- Mock connection profiles can be listed, added, edited, activated, and tested.
-- Safe exit confirmation dialog works.
-- The login form includes a password visibility toggle.
-- The login screen remains intentionally minimal.
-- The bottom bar reflects locked or open session state.
-- The bottom bar shows the authenticated username after login.
-- The left title capsule shows `Login` before authentication.
-- The left title capsule shows the authenticated user's display name after login.
-- The left title capsule acts as a root navigation shortcut.
-- The top bar user slot shows the user action before authentication and becomes logout after authentication.
-- Logout requires confirmation and returns the shell to the login root when approved.
-- Safe exit remains separate from logout.
+- Kullanici verisinde grup ve modul alanlari bulunmalidir.
+- Grup tarafi gercek domain alani olarak Isar'da tutulabilir.
+- Modul atamasi ise gercek final ID yapisi netlesene kadar gecici staging mantigiyla ele alinmaktadir.
+- Ozet karar:
+  - Group = gercek domain alani
+  - Module assignment = gecici staging alani
 
-## Current Checkpoint
+## Acik Risk / Dikkat Notu
 
-- Password visibility toggle was added to the login form.
-- The login screen was kept minimal and password rule guidance was not added there.
-- The bottom bar was extended without redesigning its existing structure.
-- Locked session state is shown when no login is active.
-- Open session state and username are shown after successful login.
-- Session data is connected to the bottom bar through shell state and session layer usage.
-- The shell root title now uses `Login` before authentication and the user's display name after authentication.
-- The left title capsule now returns to the login root when no session exists and to the authorized menu root when a session is active.
-- The top bar user slot is simplified: it shows the user action before authentication and becomes a logout action after authentication.
-- Logout now asks for confirmation before clearing session, current user, and authorized menu state and returning to `LoginView`.
-- Safe exit remains the dedicated application exit flow.
-- The previous `SWorld` title has been replaced in the shell root title behavior.
-- The right-side info text now reads `ASUNODE LoginShell v0.1.0`.
-- The current neumorphic / soft UI feel and controlled architecture approach were preserved.
-- The known overflow in the settings profile form still exists and remains intentionally deferred.
+- Built-in admin silinemiyor korumasi kod duzeyinde mevcut; bu checkpointte manuel runtime teyidi henuz acik not olarak duruyor.
+- Authorized menu kaynagi halen gecici / mock role-based yapi uzerinden besleniyor.
+- Rol cozumu halen gecici mantikta.
+- Su anda yalnizca `Yonetici` grup yapisi bulundugu icin farkli grup senaryolari henuz test edilmedi.
+- Modul tarafi bilincli olarak staging alani mantiginda ilerliyor.
+- `Grup Tanimi`, `Modul Tanimi` ve `Sifre Guncelle` ekranlari halen placeholder / hazirlik asamasinda.
 
-## Local Control Data vs External Data
+## Sonraki Adim
 
-Planned local control data scope:
+1. Built-in admin delete korumasi icin kisa runtime teyidi
+2. Grup Tanimi ekranina gecis
+3. Modul Tanimi ekranina gecis
+4. Yetkili menuleri kademeli olarak gercek veri omurgasina baglama
+5. Session persistence daha sonra
+6. PostgreSQL entegrasyon plani daha sonra
 
-- users
-- connection profiles
-- authorized menus
-- session data
-- application settings
-- theme preference
-- last active profile and last active section
-
-Planned external database scope:
-
-- daily operational data
-- core business records
-- transaction tables
-- reporting data
-
-SettingsView is for profile management and connection checks. It is not the future main operational data screen.
-
-## Architecture Notes
-
-- Provider was not added.
-- No new state management structure was introduced.
-- The shell-first structure was preserved.
-- The bottom bar was expanded on top of the existing layout instead of being redesigned.
-- Session visibility is aligned with the session layer rather than being treated as raw auth-only UI state.
-- Root navigation remains inside the shell structure through the title capsule instead of introducing a separate navigation layer.
-- Logout stays separate from safe exit.
-- `login_view.dart` was intentionally left unchanged in this checkpoint.
-
-## Documentation
+## Dokumantasyon
 
 - [Project Context](docs/PROJECT_CONTEXT.md)
 - [Roadmap](docs/ROADMAP.md)

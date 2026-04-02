@@ -2,45 +2,65 @@
 
 ## Done
 
-- Shell-first application frame was established.
-- Top bar and bottom bar are active.
-- Theme switching is working.
-- LoginView flow is connected.
-- Mock authentication flow is working.
-- Authorized menu flow is working.
-- SettingsView and mock connection profile management flow are working.
-- Repository and contract layers were added between views and mock data.
-- Session and app settings model backbone was added.
-- Password visibility eye toggle was added to the login form.
-- The login screen was kept minimal in this checkpoint.
-- Password rule guidance was intentionally kept out of the login screen.
-- Bottom bar session visibility was added.
-- Locked session state is shown when no login is active.
-- Open session state and username are shown after successful login.
-- Bottom bar session visibility is connected through shell state and session usage.
-- Bottom-right info text was updated to `ASUNODE LoginShell v0.1.0`.
-- Left title capsule root navigation is clickable.
-- The shell root title uses `Login` before authentication and the user's display name after authentication.
-- The authenticated user slot changes into logout action.
-- Logout confirmation dialog was added.
-- Confirmed logout clears session, current user, and authorized menu state and returns to `LoginView`.
-- Safe exit remains separate from logout.
-- `SWorld` to `Login` root title migration was completed.
+- Shell-first application frame kuruldu.
+- Uygulama shell ile aciliyor; ust bar, orta alan ve alt bar birlikte gorunuyor.
+- Varsayilan root orta alan mantigi olarak InfoView korunuyor.
+- Ust bar davranislari aktif: Home, tema degisimi, kullanici slotu / logout davranisi, settings ve guvenli cikis.
+- Sol ust baslik kapsulu root navigation davranisina baglandi.
+- Login yokken `Login`, login varken display name mantigi calisiyor.
+- Logout ve Safe Exit ayrimi korundu.
+- Guvenli cikista `exit(0)` sonrasi `Lost connection to device` notu normal davranis olarak kabul edildi.
+- Login Isar-backed local auth akisina tasindi.
+- `admin / admin123` ile giris calisiyor.
+- Yanlis parola reddediliyor.
+- Logout sonrasi login ekranina donus calisiyor.
+- `LocalUser`, `LocalGroup`, `LocalModule` modelleri eklendi.
+- Bootstrap / seed yapisi aktif hale getirildi.
+- Built-in admin kullanici, built-in yonetici grubu ve temel moduller seed ediliyor.
+- Sifreler hash mantigiyla tutuluyor.
+- Admin authorized menu kart basliklari final hedefe yaklastirildi: `Kullanici Tanimi`, `Grup Tanimi`, `Modul Tanimi`, `Sifre Guncelle`.
+- Authorized menu kartlari tiklanabilir hale geldi.
+- Shell icinde authorized menu alt gorunum mantigi acildi.
+- `Kullanici Tanimi` karti shell icinde ayri alt ekrana geciyor.
+- Login ekranindaki eski mock kullanici dili temizlendi.
+- Login paneli ve login view metinleri yerel dogrulama akisina gore guncellendi.
+- Admin ornek hesabinin gorunurlugu korundu.
+- `connection_profile_form.dart` overflow problemi scroll yaklasimiyla giderildi.
+- `LocalUser` modeline modul tarafi icin gecici staging mantigi eklendi.
+- `stagedModuleCodes` alani kayda gecirildi.
+- `dart run build_runner build --delete-conflicting-outputs` basarili calisti.
+- Shell icinde calisan Isar-backed `Kullanici Tanimi` yuzeyi kuruldu ve test edildi.
+- Geri donus akisi calisiyor.
+- Kullanici listesi gercek `LocalUser` verisinden geliyor.
+- Grup alani gercek `LocalGroup` verisiyle aciliyor.
+- `stagedModuleCodes` alani okunup yaziliyor.
+- Yeni kullanici ekleme calisiyor.
+- Yeni kullanici ilk gecici parola ile giris yapabiliyor.
+- Uygulama kapat-ac sonrasinda kullanici kayitlari kalici olarak geliyor.
+- Silinen kullanici kapat-ac sonrasinda da silinmis kaliyor.
+- Kullanici guncelleme, kullanici silme ve sifre sifirlama akislarinin kodu uygulanmis durumda.
+- Built-in admin delete korumasi kod duzeyinde mevcut.
 
 ## Current
 
-- Preserve the current shell-first structure without disturbing UI language.
-- Preserve the neumorphic / soft UI character while making small scoped changes.
-- Maintain repository and contract separation as the current data access rule.
-- Keep SettingsView focused on profile management and connection testing, not operational data loading.
+- Calisan shell-first yapinin korunmasi
+- Isar-backed local auth temelinin korunmasi
+- Session'in memory tabanli kalmaya devam etmesi
+- Authorized menu tarafinin gecis asamasinda kontrollu tutulmasi
+- Group = gercek domain alani
+- Module assignment = gecici staging alani
 
 ## Next
 
-- prepare password creation, password change, and password reset flows separately from login
-- continue aligning local session usage with later persistence planning
-- continue expanding authenticated shell behavior in small, controlled steps
+1. Built-in admin delete korumasi icin kisa runtime teyidi
+2. Grup Tanimi ekranini gercek Isar-backed group yonetimine cevirme
+3. Modul Tanimi ekranina gecis
+4. Yetkili menuleri kademeli olarak gercek veri omurgasina baglama
 
-## Deferred / Known
+## Later
 
-- the known overflow in the settings `connection_profile_form` remains deferred for a later pass
-- this item was not a primary target in the current checkpoint
+- Session persistence daha sonra
+- PostgreSQL entegrasyon plani daha sonra
+- Analyzer surum uyari notlarini izlemeye devam etme
+- Settings tarafinda gerekirse UI polish gecisi
+- Final authorization modelini gercek veri omurgasiyla tam hizalama
