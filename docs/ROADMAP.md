@@ -62,12 +62,26 @@
 
 ## Phase 5: Final Authorization Simplification
 
+### Son Checkpoint Hizalamasi
+
+- Grup bazli menu cozumunden sonra `Kullanici Tanimi` ekrani da ayni gerceklige yaklastirildi.
+- UI, yetkili calisma alanlarinin birincil kaynaginin grup oldugunu daha net ifade eder hale geldi.
+- `Grup Uzerinden Gelen Yetkili Moduller` alani eklenerek secili grubun gercek modul paketi kullanici ekraninda gorunur kilindi.
+- `Modul Staging / Legacy Override` alani ana yetki kaynagi gibi degil, gecis amacli ikincil alan gibi konumlandirildi.
+- Kullanici listesi etiketleri de grup bazli gerceklige gore guncellendi.
+
 ### Sonraki Adim
 
-- `Kullanici Tanimi` ekranini grup bazli gercek yetki modeline daha net hizalamak
 - `Modul Staging Alani`nin final rolunu netlestirmek
-- Uygunsa kullanici ekranindaki modul bolumunu sadeleştirmek
+- Kullanici ekranindaki hibrit parcalari daha da sadeletmek
+- Final modelde staging alaninin kaldirilip kaldirilmayacagini netlestirmek
 - Hibrit gecis katmanlarindan kontrollu cikmak
+
+### Acik Risk / Dikkat Notu
+
+- Bu checkpoint final sade authorization modeli degildir.
+- Kullanici ekrani yeni modele yaklastirilmistir; ancak hibrit gecis mantigi halen surmektedir.
+- `stagedModuleCodes` halen sistemde bulunur ve gecis / legacy override rolu tamamen kapanmis degildir.
 
 ## Phase 6: Persistence / PostgreSQL
 

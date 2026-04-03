@@ -1,5 +1,35 @@
 # Changelog
 
+## 2026-04-03
+
+### Kullanici Yonetimi UI Hizalama Checkpointi
+
+#### Dogrulandi / Calisiyor
+
+- Grup bazli yetkili menu cozumunu tasiyan temel checkpoint korunarak `Kullanici Tanimi` ekrani yeni modele daha dogru hizalandi.
+- Ekran ust aciklamasi, yetkili calisma alanlarinin oncelikle kullanicinin grubu uzerinden geldigini daha acik soyleyecek sekilde guncellendi.
+- Sag panelde `Grup Uzerinden Gelen Yetkili Moduller` alani acildi ve secili grubun gercek modul paketi ayri bir bolumde gorunur hale getirildi.
+- `Modul Staging / Legacy Override` alani artik gecis / legacy amacli ikincil alan olarak anlatilir hale geldi.
+- Secili grupta gercek modul paketi varsa staging alani duzenlemeye kapali davranir hale getirildi.
+- Secili grupta modul paketi yoksa staging alani gecis uyumlulugu icin kullanilabilir bir fallback olarak korunmus oldu.
+- Sol kullanici listesi etiketleri de grup bazli gerceklige hizalandi:
+  - built-in admin icin `Sistem modulleri`
+  - grup modulu olan kullanicilar icin `X grup modulu`
+  - varsa ek olarak `X legacy override`
+
+#### Mimari Not
+
+- Grup, gorunur calisma alanlarinin ana kaynagi olarak UI seviyesinde daha net ifade edilir hale geldi.
+- Kullanici ustundeki staging alani ana yetki kaynagi degil; gecis / legacy override rolu tasiyan hibrit alan olarak konumlandi.
+- Bu checkpoint final authorization modelinin tamamlandigi anlamina gelmez; yalnizca calisan grup bazli yapinin kullanici ekranina daha dogru yansitilmasi anlamina gelir.
+
+#### Acik Risk / Dikkat Notu
+
+- `Modul Staging Alani` final model tam oturdugunda kaldirilmali veya yalnizca ikincil override roluyle birakilmalidir.
+- Hibrit gecis mantigi halen surmektedir.
+- Session persistence sonraki fazda duruyor.
+- `Sifre Guncelle` ekrani halen placeholder / hazirlik asamasindadir.
+
 ## 2026-04-02
 
 ### Grup Bazli Modul Yetkilendirme Gecisi

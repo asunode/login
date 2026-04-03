@@ -65,6 +65,22 @@ LoginShell, shell-first Flutter Windows desktop omurgasi uzerinde gelisen bir lo
 - Muhasebe kullanicisinda grup uzerinden gelen coklu modul paketi goruntulenmistir.
 - Bu saha dogrulamalariyla grup bazli modul yetkilendirme yolu pratikte test edilmistir.
 
+### Kullanici Ekrani Hizalama Checkpointi
+
+- `Kullanici Tanimi` ekrani, calisan grup bazli yetki modeline daha dogru hizalanmistir.
+- Ekran ust aciklamasi artik yetkili calisma alanlarinin oncelikle secili kullanicinin grubu uzerinden geldigini soyler.
+- Sag panelde yeni `Grup Uzerinden Gelen Yetkili Moduller` alani bulunur.
+- Bu alan secili grubun gercek `moduleCodes` paketini gorunur ve acik bir sekilde gosterir.
+- `Modul Staging / Legacy Override` alani artik ana kaynak gibi degil, gecis / legacy amacli ikincil alan gibi anlatilir.
+- Secili grupta gercek modul paketi varsa staging alani duzenlemeye kapali davranir.
+- Secili grupta modul paketi yoksa staging alani gecis uyumlulugu icin kullanilabilir kalir.
+- Bu davranis, sistemin halen hibrit geciste oldugunu korur; ancak birincil kaynagin grup oldugunu UI seviyesinde daha net ifade eder.
+- Sol kullanici listesi etiketleri de bu gerceklige hizalanmistir:
+  - built-in admin icin `Sistem modulleri`
+  - grup modulu olan kullanicilar icin `X grup modulu`
+  - varsa ek olarak `X legacy override`
+- Boylece liste anlatimi da sadece `X staging secili` merkezli eski okumaya bagli kalmaz.
+
 ## Mimari Karar
 
 - Final hedef yon artik daha nettir:
@@ -74,7 +90,7 @@ LoginShell, shell-first Flutter Windows desktop omurgasi uzerinde gelisen bir lo
 - Gercek menu cozumu artik grup bazli calisir.
 - Ancak sistem halen hibrit gecis asamasindadir.
 - Kullanici ustundeki `stagedModuleCodes` alani tamamen kaldirilmamis durumdadir.
-- Bu alan artik ana yetki kaynagi olarak anlatilmamali; gecis / migrasyon / legacy override alani rolune yaklasmaktadir.
+- Bu alan artik ana yetki kaynagi olarak anlatilmamali; gecis / migrasyon / legacy override alani rolune indirgenmistir.
 - Final authorization modeli tam oturdugunda bu alan:
   - kaldirilmali
   - veya yalnizca ikincil override / gecis notu rolune indirilmeli
@@ -89,7 +105,7 @@ LoginShell, shell-first Flutter Windows desktop omurgasi uzerinde gelisen bir lo
 
 ## Sonraki Adim
 
-1. `Kullanici Tanimi` ekranini grup bazli gercek yetki modeline daha acik sekilde hizalamak
-2. `Modul Staging Alani`nin nihai rolunu netlestirmek
-3. Uygunsa kullanici ekranindaki modul bolumunu sadeleştirmek
+1. `Modul Staging Alani`nin nihai rolunu netlestirmek
+2. Kullanici ekranindaki hibrit parcalari daha da sadeletmek
+3. Final modelde staging alanini kaldirma veya yalnizca ikincil override rolune indirme kararini vermek
 4. Hibrit authorization katmanlarini kontrollu bicimde final modele yaklastirmak

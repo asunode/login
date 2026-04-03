@@ -30,6 +30,11 @@
 - Login kullanicisinda grup uzerinden gelen `TeknikServis` modulu goruntulendi.
 - Muhasebe kullanicisinda grup uzerinden gelen coklu modul paketi goruntulendi.
 - Boylece `Modul -> Grup -> Kullanici` zincirinin Yetkili Menu uretiminde calistigi saha olarak dogrulandi.
+- Kullanici ekraninda `Grup Uzerinden Gelen Yetkili Moduller` alani acildi ve secili grubun gercek modul paketi ayri gosterilmeye baslandi.
+- `Modul Staging / Legacy Override` alani UI seviyesinde ikincil gecis / legacy override rolune hizalandi.
+- Secili grupta gercek modul paketi varsa staging alaninin duzenlemeye kapali davranisi eklendi.
+- Secili grupta modul paketi yoksa staging alaninin gecis uyumlulugu icin kullanilabilmesi korundu.
+- Sol kullanici listesi etiketleri grup bazli gerceklige gore guncellendi.
 
 ## Current
 
@@ -39,12 +44,13 @@
 - Gercek menu cozumunun grup bazli calismasi
 - Session'in memory tabanli kalmaya devam etmesi
 - `Modul Staging Alani`nin artik ana yetki kaynagi olmayip gecis / legacy override alanina donusuyor olmasi
+- Kullanici ekranindaki hibrit parcalarin halen tam sadelememis olmasi
 
 ## Next
 
-1. `Kullanici Tanimi` ekranini grup bazli gercek yetki modeline daha net hizalamak
-2. `Modul Staging Alani`nin final rolunu netlestirmek
-3. Uygunsa kullanici ekranindaki modul bolumunu sadeleştirmek
+1. `Modul Staging Alani`nin final rolunu netlestirmek
+2. Kullanici ekranindaki hibrit parcalari daha da sadeletmek
+3. Final modelde staging alaninin kaldirilip kaldirilmayacagini netlestirmek
 4. Hibrit authorization katmanlarindan kontrollu bicimde cikmak
 
 ## Later

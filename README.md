@@ -29,6 +29,16 @@ Bu yapi korunarak local auth, admin yonetimi ve kademeli authorization omurgasi 
 - Login kullanicisinda grup uzerinden gelen `TeknikServis` modulu goruntulendi.
 - Muhasebe kullanicisinda grup uzerinden gelen coklu modul paketi goruntulendi.
 - Boylece `Modul -> Grup -> Kullanici` zinciri, Yetkili Menu uretiminde fiilen calisir hale geldi.
+- `Kullanici Tanimi` ekrani grup bazli yetki modelini daha dogru anlatacak sekilde hizalandi.
+- Ekran ust aciklamasi, yetkili calisma alanlarinin oncelikle grup uzerinden geldigini netlestiriyor.
+- Sag panelde `Grup Uzerinden Gelen Yetkili Moduller` alani secili grubun gercek modul paketini gosteriyor.
+- `Modul Staging / Legacy Override` alani artik gecis / legacy amacli ikincil alan olarak konumlaniyor.
+- Secili grupta gercek modul paketi varsa staging alani duzenlemeye kapali davraniyor.
+- Secili grupta modul paketi yoksa staging alani gecis uyumlulugu icin kullanilabiliyor.
+- Sol kullanici listesi etiketleri de yeni modele hizalandi:
+  - built-in admin icin `Sistem modulleri`
+  - grup modulu olan kullanicilar icin `X grup modulu`
+  - varsa ek olarak `X legacy override`
 
 ## Mimari Not
 
@@ -39,7 +49,7 @@ Bu yapi korunarak local auth, admin yonetimi ve kademeli authorization omurgasi 
 - Sistem halen hibrit gecis asamasindadir.
 - Gercek menu cozumu artik grup bazli calisir.
 - Kullanici uzerindeki `stagedModuleCodes` alani tamamen kaldirilmis degildir.
-- Bu alan artik ana yetki kaynagi gibi yorumlanmamali; gecis / migrasyon / legacy override alani yonune kaymaktadir.
+- Bu alan artik ana yetki kaynagi gibi yorumlanmamali; gecis / migrasyon / legacy override alani yonune indirgenmistir.
 
 ## Acik Risk / Dikkat Notu
 
@@ -50,9 +60,9 @@ Bu yapi korunarak local auth, admin yonetimi ve kademeli authorization omurgasi 
 
 ## Sonraki Adim
 
-1. `Kullanici Tanimi` ekranini grup bazli gercek yetki modeline daha net hizalamak
-2. `Modul Staging Alani`nin final rolunu netlestirmek
-3. Uygunsa kullanici ekranindaki modul bolumunu sadeleştirmek
+1. `Modul Staging Alani`nin final rolunu netlestirmek
+2. Kullanici ekranindaki hibrit parcalari daha da sadeletmek
+3. Final modelde staging alaninin kaldirilip kaldirilmayacagini netlestirmek
 4. Hibrit gecisten final authorization modeline kontrollu yaklasmak
 
 ## Dokumantasyon

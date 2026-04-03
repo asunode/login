@@ -57,9 +57,48 @@ class _UserManagementViewState extends State<UserManagementView> {
     return null;
   }
 
+  _GroupOption? get _selectedGroupOption {
+    final selectedName = _selectedGroupName?.trim().toLowerCase();
+    if (selectedName == null || selectedName.isEmpty) {
+      return null;
+    }
+
+    for (final group in _groups) {
+      if (group.name.trim().toLowerCase() == selectedName) {
+        return group;
+      }
+    }
+    return null;
+  }
+
   bool get _isEditingExistingUser => _selectedUser != null;
 
   bool get _isBuiltInSelection => _selectedUser?.isBuiltIn ?? false;
+
+  bool get _hasSelectedGroupModulePackage => _selectedGroupModuleIds.isNotEmpty;
+
+  Set<String> get _selectedGroupModuleIds {
+    final group = _selectedGroupOption;
+    if (group == null) {
+      return <String>{};
+    }
+
+    return group.moduleIds
+        .map(_normalizeModuleId)
+        .where((value) => value.isNotEmpty)
+        .toSet();
+  }
+
+  List<_ModuleOption> get _selectedGroupModules {
+    final selectedIds = _selectedGroupModuleIds;
+    if (selectedIds.isEmpty) {
+      return <_ModuleOption>[];
+    }
+
+    return _moduleOptions.where((module) {
+      return selectedIds.contains(_normalizeModuleId(module.id));
+    }).toList();
+  }
 
   Isar? get _isar => Isar.getInstance(_isarName);
 
@@ -109,6 +148,10 @@ class _UserManagementViewState extends State<UserManagementView> {
               name: group.name,
               description: group.description,
               isBuiltIn: group.isBuiltIn,
+              moduleIds: group.moduleCodes
+                  .map((code) => code.trim())
+                  .where((code) => code.isNotEmpty)
+                  .toSet(),
             ),
           )
           .toList()
@@ -127,8 +170,23 @@ class _UserManagementViewState extends State<UserManagementView> {
           return a.title.toLowerCase().compareTo(b.title.toLowerCase());
         });
 
+      final normalizedGroupModules = <String, Set<String>>{};
+      for (final group in groups) {
+        normalizedGroupModules[_normalizeGroupName(group.name)] = group.moduleIds
+            .map(_normalizeModuleId)
+            .where((value) => value.isNotEmpty)
+            .toSet();
+      }
+
       final users = localUsers
-          .map(_UserDraft.fromLocalUser)
+          .map(
+            (user) => _UserDraft.fromLocalUser(
+              user,
+              groupModuleIds:
+                  normalizedGroupModules[_normalizeGroupName(user.groupName)] ??
+                      <String>{},
+            ),
+          )
           .toList()
         ..sort((a, b) {
           if (a.isBuiltIn != b.isBuiltIn) {
@@ -136,6 +194,16 @@ class _UserManagementViewState extends State<UserManagementView> {
           }
           return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
         });
+
+      for (final group in groups) {
+        for (final moduleCode in group.moduleIds) {
+          _ensureModuleExists(
+            modules,
+            moduleCode,
+            title: moduleCode,
+          );
+        }
+      }
 
       for (final user in users) {
         _ensureGroupExists(
@@ -232,6 +300,7 @@ class _UserManagementViewState extends State<UserManagementView> {
         name: groupName.trim(),
         description: description,
         isBuiltIn: false,
+        moduleIds: <String>{},
       ),
     );
 
@@ -243,13 +312,13 @@ class _UserManagementViewState extends State<UserManagementView> {
     String moduleCode, {
     required String title,
   }) {
-    final normalized = moduleCode.trim().toLowerCase();
+    final normalized = _normalizeModuleId(moduleCode);
     if (normalized.isEmpty) {
       return;
     }
 
     final exists = modules.any(
-      (module) => module.id.trim().toLowerCase() == normalized,
+      (module) => _normalizeModuleId(module.id) == normalized,
     );
     if (exists) {
       return;
@@ -558,6 +627,14 @@ class _UserManagementViewState extends State<UserManagementView> {
     return moduleIds;
   }
 
+  String _normalizeGroupName(String value) {
+    return value.trim().toLowerCase();
+  }
+
+  String _normalizeModuleId(String value) {
+    return value.trim().toLowerCase();
+  }
+
   String _moduleLabel(_ModuleOption module) {
     if (module.isLegacy) {
       return '${module.title} (eski kayıt)';
@@ -692,7 +769,7 @@ class _UserManagementViewState extends State<UserManagementView> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Kullanıcı temel kayıtları, grup seçimi ve modül staging alanı bu ekranda yönetilir.',
+            'Kullanıcı temel kayıtları bu ekranda yönetilir. Yetkili çalışma alanları öncelikle grup üzerinden gelir; modül staging alanı ise geçiş / legacy override amacıyla korunur.',
             style: AppTextStyles.bodyMedium.copyWith(color: secondaryText),
           ),
           const SizedBox(height: 24),
@@ -727,7 +804,7 @@ class _UserManagementViewState extends State<UserManagementView> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Grup bilgisi gerçek kayıt mantığına hazırlanır. Modül seçimi ise şimdilik staging alanı olarak tutulur.',
+                            'Grup, görünür çalışma alanlarının ana kaynağıdır. Kullanıcı üstündeki modül staging alanı ise geçiş uyumluluğu için ikincil olarak korunur.',
                             style: AppTextStyles.bodySmall.copyWith(
                               color: secondaryText,
                               height: 1.5,
@@ -862,12 +939,55 @@ class _UserManagementViewState extends State<UserManagementView> {
                                   ),
                                   const SizedBox(height: 24),
                                   _SectionHeader(
-                                    title: 'Modül Staging Alanı',
+                                    title: 'Grup Üzerinden Gelen Yetkili Modüller',
+                                    icon: Icons.account_tree_outlined,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Bu alan seçili grubun gerçek modül paketini gösterir. Yetkili Menü üretiminde öncelikli kaynak burasıdır.',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: secondaryText,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  if (_selectedGroupName == null ||
+                                      _selectedGroupName!.trim().isEmpty)
+                                    Text(
+                                      'Önce bir grup seçin.',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: secondaryText,
+                                      ),
+                                    )
+                                  else if (_selectedGroupModules.isEmpty)
+                                    Text(
+                                      'Seçili grup üzerinde tanımlı modül paketi bulunmuyor.',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: secondaryText,
+                                      ),
+                                    )
+                                  else
+                                    Wrap(
+                                      spacing: 10,
+                                      runSpacing: 10,
+                                      children: _selectedGroupModules.map((module) {
+                                        return FilterChip(
+                                          selected: true,
+                                          onSelected: null,
+                                          label: Text(_moduleLabel(module)),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  const SizedBox(height: 24),
+                                  _SectionHeader(
+                                    title: 'Modül Staging / Legacy Override',
                                     icon: Icons.view_module_outlined,
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'Bu seçimler gerçek LocalModule kayıtlarından beslenir. Staging mantığı, final modül ID yapısı netleşene kadar korunur.',
+                                    _hasSelectedGroupModulePackage
+                                        ? 'Seçili grupta gerçek modül paketi bulunduğu için bu alan şu anda yalnızca geçiş / legacy görünürlüğü için korunur. Düzenleme kapalıdır.'
+                                        : 'Seçili grupta henüz modül paketi yoksa, geçiş uyumluluğu için kullanıcı bazlı staging seçimi bu alanda tutulabilir.',
                                     style: AppTextStyles.bodySmall.copyWith(
                                       color: secondaryText,
                                       height: 1.5,
@@ -892,7 +1012,8 @@ class _UserManagementViewState extends State<UserManagementView> {
                                         return FilterChip(
                                           selected: isSelected,
                                           label: Text(_moduleLabel(module)),
-                                          onSelected: module.isActive
+                                          onSelected: module.isActive &&
+                                                  !_hasSelectedGroupModulePackage
                                               ? (value) {
                                                   _toggleModule(module.id, value);
                                                 }
@@ -1105,11 +1226,27 @@ class _UserListPanel extends StatelessWidget {
                                           ? Icons.check_circle_outline
                                           : Icons.pause_circle_outline,
                                     ),
-                                    _MiniTag(
-                                      label:
-                                          '${user.stagedModuleIds.length} modül seçili',
-                                      icon: Icons.view_module_outlined,
-                                    ),
+                                    if (user.isBuiltIn)
+                                      _MiniTag(
+                                        label: 'Sistem modülleri',
+                                        icon: Icons.admin_panel_settings_outlined,
+                                      )
+                                    else if (user.groupModuleCount > 0)
+                                      _MiniTag(
+                                        label: '${user.groupModuleCount} grup modülü',
+                                        icon: Icons.account_tree_outlined,
+                                      )
+                                    else
+                                      _MiniTag(
+                                        label: 'Grup modülü yok',
+                                        icon: Icons.account_tree_outlined,
+                                      ),
+                                    if (user.legacyOverrideCount > 0)
+                                      _MiniTag(
+                                        label:
+                                            '${user.legacyOverrideCount} legacy override',
+                                        icon: Icons.tune_outlined,
+                                      ),
                                   ],
                                 ),
                               ],
@@ -1262,9 +1399,13 @@ class _UserDraft {
     required this.isBuiltIn,
     required this.mustChangePassword,
     required this.stagedModuleIds,
+    required this.groupModuleIds,
   });
 
-  factory _UserDraft.fromLocalUser(LocalUser user) {
+  factory _UserDraft.fromLocalUser(
+    LocalUser user, {
+    required Set<String> groupModuleIds,
+  }) {
     return _UserDraft(
       id: user.id.toString(),
       username: user.username,
@@ -1274,6 +1415,7 @@ class _UserDraft {
       isBuiltIn: user.isBuiltIn,
       mustChangePassword: user.mustChangePassword,
       stagedModuleIds: Set<String>.from(user.stagedModuleCodes),
+      groupModuleIds: Set<String>.from(groupModuleIds),
     );
   }
 
@@ -1285,6 +1427,22 @@ class _UserDraft {
   final bool isBuiltIn;
   final bool mustChangePassword;
   final Set<String> stagedModuleIds;
+  final Set<String> groupModuleIds;
+
+  int get groupModuleCount => groupModuleIds.length;
+
+  int get legacyOverrideCount {
+    final normalizedGroupIds = groupModuleIds
+        .map((value) => value.trim().toLowerCase())
+        .where((value) => value.isNotEmpty)
+        .toSet();
+
+    return stagedModuleIds
+        .map((value) => value.trim().toLowerCase())
+        .where((value) => value.isNotEmpty)
+        .where((value) => !normalizedGroupIds.contains(value))
+        .length;
+  }
 }
 
 class _GroupOption {
@@ -1293,12 +1451,14 @@ class _GroupOption {
     required this.name,
     required this.description,
     required this.isBuiltIn,
+    required this.moduleIds,
   });
 
   final String id;
   final String name;
   final String description;
   final bool isBuiltIn;
+  final Set<String> moduleIds;
 }
 
 class _ModuleOption {
